@@ -1,0 +1,3 @@
+Warning[2068] C:\PIC18_Detalhado\Cap3\Listagem3.5\Firmware\listagem_3_5.c 13 : obsolete use of implicit 'int' detected
+Warning[2103] C:\PIC18_Detalhado\Cap3\Listagem3.5\Firmware\listagem_3_5.c 13 : default startup code expects main function declared as 'void main (void)'
+Warning[2066] C:\PIC18_Detalhado\Cap3\Listagem3.5\Firmware\listagem_3_5.c 18 : type qualifier mismatch in assignment

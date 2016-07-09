@@ -1,0 +1,56 @@
+MPLINK 4.35, Linker
+Linker Map File - Created Mon Mar 22 23:34:41 2010
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000000
+                   .org_1       code   0x000000    program   0x000032
+.config_300001_EXEMPLO_7_3.O    romdata   0x300001    program   0x000001
+.config_300002_EXEMPLO_7_3.O    romdata   0x300002    program   0x000001
+.config_300003_EXEMPLO_7_3.O    romdata   0x300003    program   0x000001
+.config_300005_EXEMPLO_7_3.O    romdata   0x300005    program   0x000001
+.config_300006_EXEMPLO_7_3.O    romdata   0x300006    program   0x000001
+.config_300008_EXEMPLO_7_3.O    romdata   0x300008    program   0x000001
+.config_300009_EXEMPLO_7_3.O    romdata   0x300009    program   0x000001
+.config_30000A_EXEMPLO_7_3.O    romdata   0x30000a    program   0x000001
+.config_30000B_EXEMPLO_7_3.O    romdata   0x30000b    program   0x000001
+.config_30000C_EXEMPLO_7_3.O    romdata   0x30000c    program   0x000001
+.config_30000D_EXEMPLO_7_3.O    romdata   0x30000d    program   0x000001
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x000031      
+                            0x300001    0x300003      
+                            0x300005    0x300006      
+                            0x300008    0x30000d      
+            61 out of 33048 program addresses used, program memory utilization is 0%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                   ATRASO   0x000018    program     static C:\PIC18_Detalhado\Cap7\Exemplo7.3\Firmware\exemplo_7_3.asm
+                  ATRASO2   0x00002a    program     static C:\PIC18_Detalhado\Cap7\Exemplo7.3\Firmware\exemplo_7_3.asm
+                  ATRASO3   0x00002c    program     static C:\PIC18_Detalhado\Cap7\Exemplo7.3\Firmware\exemplo_7_3.asm
+                   INICIO   0x000000    program     static C:\PIC18_Detalhado\Cap7\Exemplo7.3\Firmware\exemplo_7_3.asm
+                      REP   0x00001c    program     static C:\PIC18_Detalhado\Cap7\Exemplo7.3\Firmware\exemplo_7_3.asm
+                   REPETE   0x00000a    program     static C:\PIC18_Detalhado\Cap7\Exemplo7.3\Firmware\exemplo_7_3.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                   INICIO   0x000000    program     static C:\PIC18_Detalhado\Cap7\Exemplo7.3\Firmware\exemplo_7_3.asm
+                   REPETE   0x00000a    program     static C:\PIC18_Detalhado\Cap7\Exemplo7.3\Firmware\exemplo_7_3.asm
+                   ATRASO   0x000018    program     static C:\PIC18_Detalhado\Cap7\Exemplo7.3\Firmware\exemplo_7_3.asm
+                      REP   0x00001c    program     static C:\PIC18_Detalhado\Cap7\Exemplo7.3\Firmware\exemplo_7_3.asm
+                  ATRASO2   0x00002a    program     static C:\PIC18_Detalhado\Cap7\Exemplo7.3\Firmware\exemplo_7_3.asm
+                  ATRASO3   0x00002c    program     static C:\PIC18_Detalhado\Cap7\Exemplo7.3\Firmware\exemplo_7_3.asm
+
+

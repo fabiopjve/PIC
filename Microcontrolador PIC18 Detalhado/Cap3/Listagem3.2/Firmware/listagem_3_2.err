@@ -1,0 +1,2 @@
+Warning[2068] C:\PIC18_Detalhado\Cap3\Listagem3.2\Firmware\listagem_3_2.c 17 : obsolete use of implicit 'int' detected
+Warning[2103] C:\PIC18_Detalhado\Cap3\Listagem3.2\Firmware\listagem_3_2.c 17 : default startup code expects main function declared as 'void main (void)'

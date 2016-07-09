@@ -1,0 +1,54 @@
+MPLINK 4.35, Linker
+Linker Map File - Created Mon Mar 22 23:08:11 2010
+
+                                 Section Info
+                  Section       Type    Address   Location Size(Bytes)
+                ---------  ---------  ---------  ---------  ---------
+                   .org_0       code   0x000000    program   0x000000
+                   .org_1       code   0x000000    program   0x000050
+.config_300001_EXEMPLO_11_5.O    romdata   0x300001    program   0x000001
+.config_300002_EXEMPLO_11_5.O    romdata   0x300002    program   0x000001
+.config_300003_EXEMPLO_11_5.O    romdata   0x300003    program   0x000001
+.config_300005_EXEMPLO_11_5.O    romdata   0x300005    program   0x000001
+.config_300006_EXEMPLO_11_5.O    romdata   0x300006    program   0x000001
+.config_300008_EXEMPLO_11_5.O    romdata   0x300008    program   0x000001
+.config_300009_EXEMPLO_11_5.O    romdata   0x300009    program   0x000001
+.config_30000A_EXEMPLO_11_5.O    romdata   0x30000a    program   0x000001
+.config_30000B_EXEMPLO_11_5.O    romdata   0x30000b    program   0x000001
+.config_30000C_EXEMPLO_11_5.O    romdata   0x30000c    program   0x000001
+.config_30000D_EXEMPLO_11_5.O    romdata   0x30000d    program   0x000001
+
+
+
+                              Program Memory Usage 
+                               Start         End      
+                           ---------   ---------      
+                            0x000000    0x00004f      
+                            0x300001    0x300003      
+                            0x300005    0x300006      
+                            0x300008    0x30000d      
+            91 out of 33048 program addresses used, program memory utilization is 0%
+
+
+
+                              Symbols - Sorted by Name
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+                      FIM   0x00004e    program     static C:\PIC18_Detalhado\Cap11\Exemplo11.5\Firmware\exemplo_11_5.asm
+      FLASH_FETCH_ADDRESS   0x000018    program     static C:\PIC18_Detalhado\Cap11\Exemplo11.5\Firmware\exemplo_11_5.asm
+         FLASH_WRITE_BYTE   0x000002    program     static C:\PIC18_Detalhado\Cap11\Exemplo11.5\Firmware\exemplo_11_5.asm
+         FLASH_WRITE_DATA   0x00001e    program     static C:\PIC18_Detalhado\Cap11\Exemplo11.5\Firmware\exemplo_11_5.asm
+                   INICIO   0x00003e    program     static C:\PIC18_Detalhado\Cap11\Exemplo11.5\Firmware\exemplo_11_5.asm
+
+
+
+                              Symbols - Sorted by Address
+                     Name    Address   Location    Storage File                     
+                ---------  ---------  ---------  --------- ---------                
+         FLASH_WRITE_BYTE   0x000002    program     static C:\PIC18_Detalhado\Cap11\Exemplo11.5\Firmware\exemplo_11_5.asm
+      FLASH_FETCH_ADDRESS   0x000018    program     static C:\PIC18_Detalhado\Cap11\Exemplo11.5\Firmware\exemplo_11_5.asm
+         FLASH_WRITE_DATA   0x00001e    program     static C:\PIC18_Detalhado\Cap11\Exemplo11.5\Firmware\exemplo_11_5.asm
+                   INICIO   0x00003e    program     static C:\PIC18_Detalhado\Cap11\Exemplo11.5\Firmware\exemplo_11_5.asm
+                      FIM   0x00004e    program     static C:\PIC18_Detalhado\Cap11\Exemplo11.5\Firmware\exemplo_11_5.asm
+
+

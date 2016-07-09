@@ -1,0 +1,1636 @@
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001         LIST P=18F4520
+                      00002         #include <P18F4520.INC>
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ;  MPASM PIC18F4520 processor include
+                      00005 ; 
+                      00006 ;  (c) Copyright 1999-2007 Microchip Technology, All rights reserved
+                      00007 ;==========================================================================
+                      00008 
+                      01336         LIST
+                      00003         #include "pic_simb.inc"
+                      00001 ;***************************************************************
+                      00002 ; Arquivo de símbolos utilizados no livro PIC18 Detalhado
+                      00003 ; Autor: Fábio Pereira
+                      00004 ;***************************************************************
+                      00005 
+                      00006 #define BIT7            0x80
+                      00007 #define BIT6            0x40
+                      00008 #define BIT5            0x20
+                      00009 #define BIT4            0x10
+                      00010 #define BIT3            0x08
+                      00011 #define BIT2            0x04
+                      00012 #define BIT1            0x02
+                      00013 #define BIT0            0x01
+                      00014 
+                      00015 ; INTCON
+                      00016 
+                      00017 #define bGIE            BIT7
+                      00018 #define bGIEH           BIT7
+                      00019 #define bPEIE           BIT6
+                      00020 #define bGIEL           BIT6
+                      00021 #define bTMR0IE         BIT5
+                      00022 #define bINT0IE         BIT4
+                      00023 #define bRBIE           BIT3
+                      00024 #define bTMR0IF         BIT2
+                      00025 #define bINT0IF         BIT1
+                      00026 #define bRBIF           BIT0
+                      00027 
+                      00028 #define bNRBPU          BIT7
+                      00029 #define bINTEDG0        BIT6
+                      00030 #define bINTEDG1        BIT5
+                      00031 #define bINTEDG2        BIT4
+                      00032 #define bTMR0IP         BIT2
+                      00033 #define bRBIO           BIT0
+                      00034 
+                      00035 #define bINT2IP         BIT7
+                      00036 #define bINT1IP         BIT6
+                      00037 #define bINT2IE         BIT4
+                      00038 #define bINT1IE         BIT3
+                      00039 #define bINT2IF         BIT1
+                      00040 #define bINT1IF         BIT0
+                      00041 
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00042 #define bPSPIF          BIT7
+                      00043 #define bADIF           BIT6
+                      00044 #define bRCIF           BIT5
+                      00045 #define bTXIF           BIT4
+                      00046 #define bSSPIF          BIT3
+                      00047 #define bCCP1IF         BIT2
+                      00048 #define bTMR2IF         BIT1
+                      00049 #define bTMR1IF         BIT0
+                      00050 
+                      00051 #define bOSCFIF         BIT7
+                      00052 #define bCMIF           BIT6
+                      00053 #define bEEIF           BIT4
+                      00054 #define bBCLIF          BIT3
+                      00055 #define bLVDIF          BIT2
+                      00056 #define bTMR3IF         BIT1
+                      00057 #define bCCP2IF         BIT0
+                      00058 
+                      00059 #define bPSPIE          BIT7
+                      00060 #define bADIE           BIT6
+                      00061 #define bRCIE           BIT5
+                      00062 #define bTXIE           BIT4
+                      00063 #define bSSPIE          BIT3
+                      00064 #define bCCP1IE         BIT2
+                      00065 #define bTMR2IE         BIT1
+                      00066 #define bTMR1IE         BIT0
+                      00067 
+                      00068 #define bOSCFIE         BIT7
+                      00069 #define bCMIE           BIT6
+                      00070 #define bEEIE           BIT4
+                      00071 #define bBCLIE          BIT3
+                      00072 #define bLVDIE          BIT2
+                      00073 #define bTMR3IE         BIT1
+                      00074 #define bCCP2IE         BIT0
+                      00075 
+                      00076 #define bPSPIP          BIT7
+                      00077 #define bADIP           BIT6
+                      00078 #define bRCIP           BIT5
+                      00079 #define bTXIP           BIT4
+                      00080 #define bSSPIP          BIT3
+                      00081 #define bCCP1IP         BIT2
+                      00082 #define bTMR2IP         BIT1
+                      00083 #define bTMR1IP         BIT0
+                      00084 
+                      00085 #define bOSCFIP         BIT7
+                      00086 #define bCMIP           BIT6
+                      00087 #define bEEIP           BIT4
+                      00088 #define bBCLIP          BIT3
+                      00089 #define bLVDIP          BIT2
+                      00090 #define bTMR3IP         BIT1
+                      00091 #define bCCP2IP         BIT0
+                      00092 
+                      00093 ; RCON ********************
+                      00094 
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00095 #define bIPEN           BIT7
+                      00096 #define bSBOREN         BIT6
+                      00097 #define bNRI            BIT4
+                      00098 #define bNTO            BIT3
+                      00099 #define bNPD            BIT2
+                      00100 #define bNPOR           BIT1
+                      00101 #define bNBOR           BIT0
+                      00102 
+                      00103 ; WDTCON
+                      00104 
+                      00105 #define bSWDTEN         BIT0
+                      00106 
+                      00107 ; HLVDCON
+                      00108 
+                      00109 #define VDIRMAQ         BIT7
+                      00110 #define bIRVST          BIT5
+                      00111 #define bHLVDEN         BIT4
+                      00112 #define bHLVD2V17       0
+                      00113 #define bHLVD2V23       1
+                      00114 #define bHLVD2V36       2
+                      00115 #define bHLVD2V44       3
+                      00116 #define bHLVD2V60       4
+                      00117 #define bHLVD2V79       5
+                      00118 #define bHLVD2V89       6
+                      00119 #define bHLVD3V12       7
+                      00120 #define bHLVD3V39       8
+                      00121 #define bHLVD3V55       9
+                      00122 #define bHLVD3V71       10
+                      00123 #define bHLVD3V90       11
+                      00124 #define bHLVD4V11       12
+                      00125 #define bHLVD4V33       13
+                      00126 #define bHLVD4V59       14
+                      00127 #define bHLVD_EXT       15
+                      00128 
+                      00129 ; OSCCON **************
+                      00130 
+                      00131 #define bIDLEN                  BIT7
+                      00132 #define bCLKINT_31k             0
+                      00133 #define bCLKINT_125k    BIT4
+                      00134 #define bCLKINT_250k    BIT5
+                      00135 #define bCLKINT_500k    (BIT5 | BIT4)
+                      00136 #define bCLKINT_1M              BIT6
+                      00137 #define bCLKINT_2M              (BIT6 | BIT4)
+                      00138 #define bCLKINT_4M              (BIT6 | BIT5)
+                      00139 #define bCLKINT_8M              (BIT6 | BIT5 | BIT4)
+                      00140 #define bOSTS                   BIT3
+                      00141 #define bIOFS                   BIT2
+                      00142 #define bOSC_PRI                0
+                      00143 #define bOSC_SEC                1
+                      00144 #define bOSC_INT                3
+                      00145 
+                      00146 ; OSCTUNE *************
+                      00147 #define bINTSRC         BIT7
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00148 #define bPLLEN          BIT6
+                      00149 
+                      00150 ; T0CON ***************
+                      00151 #define bTMR0ON                 BIT7
+                      00152 #define bT08BIT                 BIT6
+                      00153 #define bT0CS                   BIT5
+                      00154 #define bT0SE                   BIT4
+                      00155 #define bPSA                    BIT3
+                      00156 #define bT0CLK_PRE2     0
+                      00157 #define bT0CLK_PRE4     1
+                      00158 #define bT0CLK_PRE8     2
+                      00159 #define bT0CLK_PRE16    3
+                      00160 #define bT0CLK_PRE32    4
+                      00161 #define bT0CLK_PRE64    5
+                      00162 #define bT0CLK_PRE128   6
+                      00163 #define bT0CLK_PRE256   7
+                      00164 
+                      00165 ; T1CON ***************
+                      00166 #define bRD16                   BIT7
+                      00167 #define bT1RUN                  BIT6
+                      00168 #define bT1CLK_PRE1             0
+                      00169 #define bT1CLK_PRE2             BIT4
+                      00170 #define bT1CLK_PRE4             BIT5
+                      00171 #define bT1CLK_PRE8             (BIT5 | BIT4)
+                      00172 #define bT1OSCEN                BIT3
+                      00173 #define bT1SYNC                 BIT2
+                      00174 #define bT1CLK_EXT              BIT1
+                      00175 #define bTMR1ON                 BIT0
+                      00176 
+                      00177 ; T2CON ***************
+                      00178 #define bT2OUTPS_1              0
+                      00179 #define bT2OUTPS_2              1<<3
+                      00180 #define bT2OUTPS_3              2<<3
+                      00181 #define bT2OUTPS_4              3<<3
+                      00182 #define bT2OUTPS_5              4<<3
+                      00183 #define bT2OUTPS_6              5<<3
+                      00184 #define bT2OUTPS_7              6<<3
+                      00185 #define bT2OUTPS_8              7<<3
+                      00186 #define bT2OUTPS_9              8<<3
+                      00187 #define bT2OUTPS_10             9<<3
+                      00188 #define bT2OUTPS_11             10<<3
+                      00189 #define bT2OUTPS_12             11<<3
+                      00190 #define bT2OUTPS_13             12<<3
+                      00191 #define bT2OUTPS_14             13<<3
+                      00192 #define bT2OUTPS_15             14<<3
+                      00193 #define bT2OUTPS_16             15<<3
+                      00194 #define bTMR2ON                 BIT2
+                      00195 #define bT2CLK_PRE1             0
+                      00196 #define bT2CLK_PRE2             1
+                      00197 #define bT2CLK_PRE4             2
+                      00198 #define bT2CLK_PRE8             3
+                      00199 
+                      00200 ; T3CON ***************
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00201 #define bT3CLK_PRE1             0
+                      00202 #define bT3CLK_PRE2             BIT4
+                      00203 #define bT3CLK_PRE4             BIT5
+                      00204 #define bT3CLK_PRE8             (BIT5 | BIT4)
+                      00205 #define bT1CCP12                0
+                      00206 #define bT1CCP1_T3CCP2          BIT3
+                      00207 #define bT3CCP12                (BIT3 | BIT6)
+                      00208 #define bT3SYNC                 BIT2
+                      00209 #define bT3CLK_EXT              BIT1
+                      00210 #define bTMR3ON                 BIT0
+                      00211 
+                      00212 ; CCP1CON *********************
+                      00213 ; CCP2CON *********************
+                      00214 #define bECCP_PWM_SINGLE        0
+                      00215 #define bECCP_PWM_FULL_FWD      BIT6
+                      00216 #define bECCP_PWM_HALF          BIT7
+                      00217 #define bECCP_PWM_FULL_REV      (BIT7 | BIT6)
+                      00218 #define bCCP_OFF                0
+                      00219 #define bCCP_COMPARE_TOGGLE     2
+                      00220 #define bCCP_CAPTURE_FALLING    4
+                      00221 #define bCCP_CAPTURE_RISING     5
+                      00222 #define bCCP_CAPTURE_4RISING    6
+                      00223 #define bCCP_CAPTURE_16RISING   7
+                      00224 #define bCCP_COMPARE_SET        8
+                      00225 #define bCCP_COMPARE_RESET      9
+                      00226 #define bCCP_COMPARE_INT        10
+                      00227 #define bCCP_COMPARE_SPECIAL    11
+                      00228 #define bCCP_PWM                12
+                      00229 #define bECCP_PWM_ABCD_HIGH     12
+                      00230 #define bECCP_PWM_AC_HIGH       13
+                      00231 #define bECCP_PWM_BD_HIGH       14
+                      00232 #define bECCP_PWM_LOW           15
+                      00233 
+                      00234 ; PWM1CON *********************
+                      00235 #define bPRSEN                  BIT7
+                      00236 
+                      00237 ; ECCPAS **********************
+                      00238 #define bECCPASE                BIT7
+                      00239 #define bAS_OFF                 0
+                      00240 #define bAS_CMP1                1<<4
+                      00241 #define bAS_CMP2                2<<4
+                      00242 #define bAS_CMP                 3<<4
+                      00243 #define bAS_INT0                4<<4
+                      00244 #define bAS_INT0CMP1    5<<4
+                      00245 #define bAS_INT0CMP2    6<<4
+                      00246 #define bAS_INT0CMP             7<<4
+                      00247 #define bAS_AC_LOW              0
+                      00248 #define bAS_AC_HIGH             BIT2
+                      00249 #define bAS_AC_HIGHZ    3<<2
+                      00250 #define bAS_BD_LOW              0
+                      00251 #define bAS_BD_HIGH             1
+                      00252 #define bAS_BD_HIGHZ    3
+                      00253 
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00254 ; CVRCON *********************
+                      00255 #define bCVREN                  BIT7
+                      00256 #define bCVROE                  BIT6
+                      00257 #define bCVRR                   BIT5
+                      00258 #define bCVRSS                  BIT4
+                      00259 
+                      00260 ; CMCON **********************
+                      00261 #define bC2OUT                  BIT7
+                      00262 #define bC1OUT                  BIT6
+                      00263 #define bC2INV                  BIT5
+                      00264 #define bC1INV                  BIT4
+                      00265 #define bCIS                    BIT3
+                      00266 
+                      00267 ; ADCON0 *********************
+                      00268 #define bADC_CH0                0<<2
+                      00269 #define bADC_CH1                1<<2
+                      00270 #define bADC_CH2                2<<2
+                      00271 #define bADC_CH3                3<<2
+                      00272 #define bADC_CH4                4<<2
+                      00273 #define bADC_CH5                5<<2
+                      00274 #define bADC_CH6                6<<2
+                      00275 #define bADC_CH7                7<<2
+                      00276 #define bADC_CH8                8<<2
+                      00277 #define bADC_CH9                9<<2
+                      00278 #define bADC_CH10               10<<2
+                      00279 #define bADC_CH11               11<<2
+                      00280 #define bADC_CH12               12<<2
+                      00281 #define bADC_GO                 BIT1
+                      00282 #define bADC_ON                 BIT0
+                      00283 
+                      00284 ; ADCON1 *********************
+                      00285 #define bADC_EXT_NREF   BIT5
+                      00286 #define bADC_EXT_PREF   BIT4
+                      00287 
+                      00288 ;ADCON2 **********************
+                      00289 #define bADFM                   BIT7
+                      00290 #define bADC_ACQ0               0<<3
+                      00291 #define bADC_ACQ2               1<<3
+                      00292 #define bADC_ACQ4               2<<3
+                      00293 #define bADC_ACQ6               3<<3
+                      00294 #define bADC_ACQ8               4<<3
+                      00295 #define bADC_ACQ12              5<<3
+                      00296 #define bADC_ACQ16              6<<3
+                      00297 #define bADC_ACQ20              7<<3
+                      00298 #define bADC_CLK_DIV2   0
+                      00299 #define bADC_CLK_DIV8   1
+                      00300 #define bADC_CLK_DIV32  2
+                      00301 #define bADC_CLK_RC             3
+                      00302 #define bADC_CLK_DIV4   4
+                      00303 #define bADC_CLK_DIV16  5
+                      00304 #define bADC_CLK_DIV64  6 
+                      00305 
+                      00306 ; EECON1
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00307 #define bEEPGD                  BIT7
+                      00308 #define bCFGS                   BIT6
+                      00309 #define bFREE                   BIT4
+                      00310 #define bWRERR                  BIT3
+                      00311 #define bWREN                   BIT2
+                      00312 #define bWR                             BIT1
+                      00313 #define bRD                             BIT0
+                      00314 
+                      00315 ; TXSTA
+                      00316 #define bCSRC                   BIT7
+                      00317 #define bTX9                    BIT6
+                      00318 #define bTXEN                   BIT5
+                      00319 #define bSYNC                   BIT4
+                      00320 #define bSENDB                  BIT3
+                      00321 #define bBRGH                   BIT2
+                      00322 #define bTRMT                   BIT1
+                      00323 #define bTX9D                   BIT0
+                      00324 
+                      00325 ; RCSTA
+                      00326 #define bSPEN                   BIT7
+                      00327 #define bRX9                    BIT6
+                      00328 #define bSREN                   BIT5
+                      00329 #define bCREN                   BIT4
+                      00330 #define bADDEN                  BIT3
+                      00331 #define bFERR                   BIT2
+                      00332 #define bOERR                   BIT1
+                      00333 #define bRX9D                   BIT0
+                      00334 
+                      00335 ; BAUDCON
+                      00336 #define bABDOVF                 BIT7
+                      00337 #define bRCIDL                  BIT6
+                      00338 #define bRXDTP                  BIT5
+                      00339 #define bTXCKP                  BIT4
+                      00340 #define bBRG16                  BIT3
+                      00341 #define bWUE                            BIT1
+                      00342 #define bABDEN                  BIT0
+                      00343 
+                      00344 ; SSPSTAT
+                      00345 #define bSMP                            BIT7
+                      00346 #define bCKE                            BIT6
+                      00347 #define bDATA                           BIT5
+                      00348 #define bSTOP                           BIT4
+                      00349 #define bSTART                  BIT3
+                      00350 #define bRW                                     BIT2
+                      00351 #define bUA                                     BIT1
+                      00352 #define bBF                                     BIT0
+                      00353 
+                      00354 ;SSPCON1
+                      00355 #define bWCOL                           BIT7
+                      00356 #define bSSPOV                  BIT6
+                      00357 #define bSSPEN                  BIT5
+                      00358 #define bCKP                            BIT4
+                      00359 #define bSPI_MST_4                      0
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00360 #define bSPI_MST_16                     1
+                      00361 #define bSPI_MST_64                     2
+                      00362 #define bSPI_MST_TMR2           3
+                      00363 #define bSPI_SLAVE_SS           4
+                      00364 #define bSPI_SLAVE                      5
+                      00365 #define bI2C_SLV_ADD7           6
+                      00366 #define bI2C_SLV_ADD10  7
+                      00367 #define bI2C_MST_1                      8
+                      00368 #define bI2C_MST_2                      11
+                      00369 #define bI2C_SLV_ADD7I  14
+                      00370 #define bI2C_SLV_ADD10I 15
+                      00004 
+                      00005 ; Bits de configuração
+01 18 1E 03 81 0F C0 000006         CONFIG  OSC=XT,PWRT=ON,WDT=OFF,MCLRE=OFF,DEBUG=OFF,LVP=OFF,BOREN=OFF
+       F E0 0F 40 
+                      00007 
+000000                00008         org     0x0000          ; vetor de reset
+000000 EF0B F000      00009         GOTO    INICIO
+000008                00010         org             0x0008          ; vetor de interrupção
+000008 94F2           00011         BCF             INTCON,T0IF     ; apaga o flag de interrupção do timer 0
+00000A 0E85           00012         MOVLW   0x85
+00000C 6ED7           00013         MOVWF   TMR0H           ; TMR0H = 0x85
+00000E 0EEE           00014         MOVLW   0xEE
+000010 6ED6           00015         MOVWF   TMR0L           ; TMR0L = 0xEE
+000012 708A           00016         BTG             LATB,0          ; inverte o estado do pino RB0
+000014 0011           00017         RETFIE  FAST            ; retorna da interrupção
+000016                00018 INICIO:
+000016 9093           00019         BCF             TRISB,0         ; configura RB0 como saída
+000018 0E0F           00020         MOVLW   0x0F    
+00001A 6EC1           00021         MOVWF   ADCON1          ; configura os pinos do A/D para o modo digital
+00001C 0E85           00022         MOVLW   0x85
+00001E 6ED7           00023         MOVWF   TMR0H           ; TMR0H = 0x85
+000020 0EEE           00024         MOVLW   0xEE
+000022 6ED6           00025         MOVWF   TMR0L           ; TMR0L = 0xEE
+000024 0E84           00026         MOVLW   bTMR0ON | bT0CLK_PRE32
+000026 6ED5           00027         MOVWF   T0CON           ; timer 0 ligado, clock interno, prescaler=1/32
+000028 8AF2           00028         BSF             INTCON,T0IE     ; habilita a interrupção do timer 0
+00002A 8EF2           00029         BSF             INTCON,GIE      ; habilita interrupções
+00002C                00030 REPETE:
+00002C D7FF           00031         BRA             REPETE          ; loop
+                      00032         END
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE  9
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+A                                 00000000
+ABDEN                             00000000
+ABDOVF                            00000007
+ACCESS                            00000000
+ACKDT                             00000005
+ACKEN                             00000004
+ACKSTAT                           00000006
+ACQT0                             00000003
+ACQT1                             00000004
+ACQT2                             00000005
+ADCON0                            00000FC2
+ADCON1                            00000FC1
+ADCON2                            00000FC0
+ADCS0                             00000000
+ADCS1                             00000001
+ADCS2                             00000002
+ADDEN                             00000003
+ADEN                              00000003
+ADFM                              00000007
+ADIE                              00000006
+ADIF                              00000006
+ADIP                              00000006
+ADON                              00000000
+ADRES                             00000FC3
+ADRESH                            00000FC4
+ADRESL                            00000FC3
+AN0                               00000000
+AN1                               00000001
+AN10                              00000001
+AN11                              00000004
+AN12                              00000000
+AN2                               00000002
+AN3                               00000003
+AN4                               00000005
+AN5                               00000000
+AN6                               00000001
+AN7                               00000002
+AN8                               00000002
+AN9                               00000003
+BANKED                            00000001
+BAUDCON                           00000FB8
+BAUDCTL                           00000FB8
+BCLIE                             00000003
+BCLIF                             00000003
+BCLIP                             00000003
+BF                                00000000
+BGST                              00000005
+BIT0                              0x01
+BIT1                              0x02
+BIT2                              0x04
+BIT3                              0x08
+BIT4                              0x10
+BIT5                              0x20
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 10
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+BIT6                              0x40
+BIT7                              0x80
+BOR                               00000000
+BRG16                             00000003
+BRGH                              00000002
+BSR                               00000FE0
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1                              00000002
+CCP1CON                           00000FBD
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1IP                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCP2CON                           00000FBA
+CCP2IE                            00000000
+CCP2IF                            00000000
+CCP2IP                            00000000
+CCP2M0                            00000000
+CCP2M1                            00000001
+CCP2M2                            00000002
+CCP2M3                            00000003
+CCP2X                             00000005
+CCP2Y                             00000004
+CCP2_PORTB                        00000003
+CCP2_PORTC                        00000001
+CCPR1                             00000FBE
+CCPR1H                            00000FBF
+CCPR1L                            00000FBE
+CCPR2                             00000FBB
+CCPR2H                            00000FBC
+CCPR2L                            00000FBB
+CFGS                              00000006
+CHS0                              00000002
+CHS1                              00000003
+CHS2                              00000004
+CHS3                              00000005
+CIS                               00000003
+CK                                00000006
+CKE                               00000006
+CKP                               00000004
+CLKI                              00000007
+CLKO                              00000006
+CM0                               00000000
+CM1                               00000001
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 11
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+CM2                               00000002
+CMCON                             00000FB4
+CMIE                              00000006
+CMIF                              00000006
+CMIP                              00000006
+CREN                              00000004
+CS                                00000002
+CSRC                              00000007
+CVR0                              00000000
+CVR1                              00000001
+CVR2                              00000002
+CVR3                              00000003
+CVRCON                            00000FB5
+CVREF                             00000002
+CVREN                             00000007
+CVROE                             00000006
+CVRR                              00000005
+CVRSS                             00000004
+D                                 00000005
+DC                                00000001
+DC1B0                             00000004
+DC1B1                             00000005
+DC2B0                             00000004
+DC2B1                             00000005
+DDRA                              TRISA
+DDRB                              TRISB
+DDRC                              TRISC
+DDRD                              TRISD
+DDRE                              TRISE
+DONE                              00000001
+D_A                               00000005
+ECCP1AS                           00000FB6
+ECCPAS0                           00000004
+ECCPAS1                           00000005
+ECCPAS2                           00000006
+ECCPASE                           00000007
+EEADR                             00000FA9
+EECON1                            00000FA6
+EECON2                            00000FA7
+EEDATA                            00000FA8
+EEIE                              00000004
+EEIF                              00000004
+EEIP                              00000004
+EEPGD                             00000007
+FAST                              00000001
+FERR                              00000002
+FLTS                              00000002
+FREE                              00000004
+FSR0                              00000000
+FSR0H                             00000FEA
+FSR0L                             00000FE9
+FSR1                              00000001
+FSR1H                             00000FE2
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 12
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+FSR1L                             00000FE1
+FSR2                              00000002
+FSR2H                             00000FDA
+FSR2L                             00000FD9
+GCEN                              00000007
+GIE                               00000007
+GIEH                              00000007
+GIEL                              00000006
+GO                                00000001
+GO_DONE                           00000001
+HLVDCON                           00000FD2
+HLVDEN                            00000004
+HLVDIE                            00000002
+HLVDIF                            00000002
+HLVDIP                            00000002
+HLVDL0                            00000000
+HLVDL1                            00000001
+HLVDL2                            00000002
+HLVDL3                            00000003
+IBF                               00000007
+IBOV                              00000005
+IDLEN                             00000007
+INDF0                             00000FEF
+INDF1                             00000FE7
+INDF2                             00000FDF
+INICIO                            00000016
+INT0                              00000000
+INT0E                             00000004
+INT0F                             00000001
+INT0IE                            00000004
+INT0IF                            00000001
+INT1                              00000001
+INT1E                             00000003
+INT1F                             00000000
+INT1IE                            00000003
+INT1IF                            00000000
+INT1IP                            00000006
+INT1P                             00000006
+INT2                              00000002
+INT2E                             00000004
+INT2F                             00000001
+INT2IE                            00000004
+INT2IF                            00000001
+INT2IP                            00000007
+INT2P                             00000007
+INTCON                            00000FF2
+INTCON2                           00000FF1
+INTCON3                           00000FF0
+INTEDG0                           00000006
+INTEDG1                           00000005
+INTEDG2                           00000004
+INTSRC                            00000007
+IOFS                              00000002
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 13
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+IPEN                              00000007
+IPR1                              00000F9F
+IPR2                              00000FA2
+IRCF0                             00000004
+IRCF1                             00000005
+IRCF2                             00000006
+IRVST                             00000005
+IVRST                             00000005
+KBI0                              00000004
+KBI1                              00000005
+KBI2                              00000006
+KBI3                              00000007
+LATA                              00000F89
+LATA0                             00000000
+LATA1                             00000001
+LATA2                             00000002
+LATA3                             00000003
+LATA4                             00000004
+LATA5                             00000005
+LATA6                             00000006
+LATA7                             00000007
+LATB                              00000F8A
+LATB0                             00000000
+LATB1                             00000001
+LATB2                             00000002
+LATB3                             00000003
+LATB4                             00000004
+LATB5                             00000005
+LATB6                             00000006
+LATB7                             00000007
+LATC                              00000F8B
+LATC0                             00000000
+LATC1                             00000001
+LATC2                             00000002
+LATC3                             00000003
+LATC4                             00000004
+LATC5                             00000005
+LATC6                             00000006
+LATC7                             00000007
+LATD                              00000F8C
+LATD0                             00000000
+LATD1                             00000001
+LATD2                             00000002
+LATD3                             00000003
+LATD4                             00000004
+LATD5                             00000005
+LATD6                             00000006
+LATD7                             00000007
+LATE                              00000F8D
+LATE0                             00000000
+LATE1                             00000001
+LATE2                             00000002
+LVDCON                            00000FD2
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 14
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+LVDEN                             00000004
+LVDIE                             00000002
+LVDIF                             00000002
+LVDIN                             00000005
+LVDIP                             00000002
+LVDL0                             00000000
+LVDL1                             00000001
+LVDL2                             00000002
+LVDL3                             00000003
+LVV0                              00000000
+LVV1                              00000001
+LVV2                              00000002
+LVV3                              00000003
+MCLR                              00000003
+N                                 00000004
+NOT_A                             00000005
+NOT_ADDRESS                       00000005
+NOT_BOR                           00000000
+NOT_CS                            00000002
+NOT_DONE                          00000001
+NOT_MCLR                          00000003
+NOT_PD                            00000002
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_RD                            00000000
+NOT_RI                            00000004
+NOT_SS                            00000005
+NOT_T1SYNC                        00000002
+NOT_T3SYNC                        00000002
+NOT_TO                            00000003
+NOT_W                             00000002
+NOT_WR                            00000001
+NOT_WRITE                         00000002
+OBF                               00000006
+OERR                              00000001
+OSC1                              00000007
+OSC2                              00000006
+OSCCON                            00000FD3
+OSCFIE                            00000007
+OSCFIF                            00000007
+OSCFIP                            00000007
+OSCTUNE                           00000F9B
+OSTS                              00000003
+OV                                00000003
+P                                 00000004
+P1B                               00000005
+P1C                               00000006
+P1D                               00000007
+P1M0                              00000006
+P1M1                              00000007
+PC                                00000FF9
+PCFG0                             00000000
+PCFG1                             00000001
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 15
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+PCFG2                             00000002
+PCFG3                             00000003
+PCL                               00000FF9
+PCLATH                            00000FFA
+PCLATU                            00000FFB
+PD                                00000002
+PDC0                              00000000
+PDC1                              00000001
+PDC2                              00000002
+PDC3                              00000003
+PDC4                              00000004
+PDC5                              00000005
+PDC6                              00000006
+PEIE                              00000006
+PEN                               00000002
+PGC                               00000006
+PGD                               00000007
+PGM                               00000005
+PIE1                              00000F9D
+PIE2                              00000FA0
+PIR1                              00000F9E
+PIR2                              00000FA1
+PLLEN                             00000006
+PLUSW0                            00000FEB
+PLUSW1                            00000FE3
+PLUSW2                            00000FDB
+POR                               00000001
+PORTA                             00000F80
+PORTB                             00000F81
+PORTC                             00000F82
+PORTD                             00000F83
+PORTE                             00000F84
+POSTDEC0                          00000FED
+POSTDEC1                          00000FE5
+POSTDEC2                          00000FDD
+POSTINC0                          00000FEE
+POSTINC1                          00000FE6
+POSTINC2                          00000FDE
+PR2                               00000FCB
+PREINC0                           00000FEC
+PREINC1                           00000FE4
+PREINC2                           00000FDC
+PROD                              00000FF3
+PRODH                             00000FF4
+PRODL                             00000FF3
+PRSEN                             00000007
+PSA                               00000003
+PSP0                              00000000
+PSP1                              00000001
+PSP2                              00000002
+PSP3                              00000003
+PSP4                              00000004
+PSP5                              00000005
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 16
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+PSP6                              00000006
+PSP7                              00000007
+PSPIE                             00000007
+PSPIF                             00000007
+PSPIP                             00000007
+PSPMODE                           00000004
+PSSAC0                            00000002
+PSSAC1                            00000003
+PSSBD0                            00000000
+PSSBD1                            00000001
+PWM1CON                           00000FB7
+R                                 00000002
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RA5                               00000005
+RA6                               00000006
+RA7                               00000007
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RBIP                              00000000
+RBPU                              00000007
+RC0                               00000000
+RC1                               00000001
+RC2                               00000002
+RC3                               00000003
+RC4                               00000004
+RC5                               00000005
+RC6                               00000006
+RC7                               00000007
+RCEN                              00000003
+RCIDL                             00000006
+RCIE                              00000005
+RCIF                              00000005
+RCIP                              00000005
+RCMT                              00000006
+RCON                              00000FD0
+RCREG                             00000FAE
+RCSTA                             00000FAB
+RD                                00000000
+RD0                               00000000
+RD1                               00000001
+RD16                              00000007
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 17
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RD2                               00000002
+RD3                               00000003
+RD4                               00000004
+RD5                               00000005
+RD6                               00000006
+RD7                               00000007
+RE0                               00000000
+RE1                               00000001
+RE2                               00000002
+RE3                               00000003
+REPETE                            0000002C
+RI                                00000004
+RSEN                              00000001
+RX                                00000007
+RX9                               00000006
+RX9D                              00000000
+RXDTP                             00000005
+R_W                               00000002
+S                                 00000003
+SBOREN                            00000006
+SCK                               00000003
+SCKP                              00000004
+SCL                               00000003
+SCS0                              00000000
+SCS1                              00000001
+SDA                               00000004
+SDI                               00000004
+SDO                               00000005
+SEN                               00000000
+SENDB                             00000003
+SMP                               00000007
+SP0                               00000000
+SP1                               00000001
+SP2                               00000002
+SP3                               00000003
+SP4                               00000004
+SPBRG                             00000FAF
+SPBRGH                            00000FB0
+SPEN                              00000007
+SREN                              00000005
+SS                                00000005
+SSPADD                            00000FC8
+SSPBUF                            00000FC9
+SSPCON1                           00000FC6
+SSPCON2                           00000FC5
+SSPEN                             00000005
+SSPIE                             00000003
+SSPIF                             00000003
+SSPIP                             00000003
+SSPM0                             00000000
+SSPM1                             00000001
+SSPM2                             00000002
+SSPM3                             00000003
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 18
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+SSPOV                             00000006
+SSPSTAT                           00000FC7
+STATUS                            00000FD8
+STKFUL                            00000007
+STKOVF                            00000007
+STKPTR                            00000FFC
+STKUNF                            00000006
+SWDTE                             00000000
+SWDTEN                            00000000
+SYNC                              00000004
+T08BIT                            00000006
+T0CKI                             00000004
+T0CON                             00000FD5
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0PS0                             00000000
+T0PS1                             00000001
+T0PS2                             00000002
+T0SE                              00000004
+T13CKI                            00000000
+T1CKI                             00000000
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000FCD
+T1OSCEN                           00000003
+T1OSI                             00000001
+T1OSO                             00000000
+T1RUN                             00000006
+T1SYNC                            00000002
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000FCA
+T2OUTPS0                          00000003
+T2OUTPS1                          00000004
+T2OUTPS2                          00000005
+T2OUTPS3                          00000006
+T3CCP1                            00000003
+T3CCP2                            00000006
+T3CKPS0                           00000004
+T3CKPS1                           00000005
+T3CON                             00000FB1
+T3SYNC                            00000002
+TABLAT                            00000FF5
+TBLPTR                            00000FF6
+TBLPTRH                           00000FF7
+TBLPTRL                           00000FF6
+TBLPTRU                           00000FF8
+TMR0H                             00000FD7
+TMR0IE                            00000005
+TMR0IF                            00000002
+TMR0IP                            00000002
+TMR0L                             00000FD6
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 19
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TMR0ON                            00000007
+TMR1CS                            00000001
+TMR1H                             00000FCF
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1IP                            00000000
+TMR1L                             00000FCE
+TMR1ON                            00000000
+TMR2                              00000FCC
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2IP                            00000001
+TMR2ON                            00000002
+TMR3CS                            00000001
+TMR3H                             00000FB3
+TMR3IE                            00000001
+TMR3IF                            00000001
+TMR3IP                            00000001
+TMR3L                             00000FB2
+TMR3ON                            00000000
+TO                                00000003
+TOS                               00000FFD
+TOSH                              00000FFE
+TOSL                              00000FFD
+TOSU                              00000FFF
+TRISA                             00000F92
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISA5                            00000005
+TRISA6                            00000006
+TRISA7                            00000007
+TRISB                             00000F93
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+TRISC                             00000F94
+TRISC0                            00000000
+TRISC1                            00000001
+TRISC2                            00000002
+TRISC3                            00000003
+TRISC4                            00000004
+TRISC5                            00000005
+TRISC6                            00000006
+TRISC7                            00000007
+TRISD                             00000F95
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 20
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TRISD0                            00000000
+TRISD1                            00000001
+TRISD2                            00000002
+TRISD3                            00000003
+TRISD4                            00000004
+TRISD5                            00000005
+TRISD6                            00000006
+TRISD7                            00000007
+TRISE                             00000F96
+TRISE0                            00000000
+TRISE1                            00000001
+TRISE2                            00000002
+TRMT                              00000001
+TUN0                              00000000
+TUN1                              00000001
+TUN2                              00000002
+TUN3                              00000003
+TUN4                              00000004
+TX                                00000006
+TX9                               00000006
+TX9D                              00000000
+TXCKP                             00000004
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXIP                              00000004
+TXREG                             00000FAD
+TXSTA                             00000FAC
+UA                                00000001
+VCFG0                             00000004
+VCFG1                             00000005
+VDIRMAG                           00000007
+VDIRMAQ                           BIT7
+VPP                               00000003
+VREFN                             00000002
+VREFP                             00000003
+W                                 00000000
+WCOL                              00000007
+WDTCON                            00000FD1
+WR                                00000001
+WREG                              00000FE8
+WREN                              00000002
+WRERR                             00000003
+WUE                               00000001
+Z                                 00000002
+_BOREN_NOSLP_2L                   000000FD
+_BOREN_OFF_2L                     000000F9
+_BOREN_ON_2L                      000000FB
+_BOREN_SBORDIS_2L                 000000FF
+_BORV_0_2L                        000000E7
+_BORV_1_2L                        000000EF
+_BORV_2_2L                        000000F7
+_BORV_3_2L                        000000FF
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 21
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_CCP2MX_PORTBE_3H                 000000FE
+_CCP2MX_PORTC_3H                  000000FF
+_CONFIG1H                         00300001
+_CONFIG2H                         00300003
+_CONFIG2L                         00300002
+_CONFIG3H                         00300005
+_CONFIG4L                         00300006
+_CONFIG5H                         00300009
+_CONFIG5L                         00300008
+_CONFIG6H                         0030000B
+_CONFIG6L                         0030000A
+_CONFIG7H                         0030000D
+_CONFIG7L                         0030000C
+_CP0_OFF_5L                       000000FF
+_CP0_ON_5L                        000000FE
+_CP1_OFF_5L                       000000FF
+_CP1_ON_5L                        000000FD
+_CP2_OFF_5L                       000000FF
+_CP2_ON_5L                        000000FB
+_CP3_OFF_5L                       000000FF
+_CP3_ON_5L                        000000F7
+_CPB_OFF_5H                       000000FF
+_CPB_ON_5H                        000000BF
+_CPD_OFF_5H                       000000FF
+_CPD_ON_5H                        0000007F
+_DEBUG_OFF_4L                     000000FF
+_DEBUG_ON_4L                      0000007F
+_DEVID1                           003FFFFE
+_DEVID2                           003FFFFF
+_EBTR0_OFF_7L                     000000FF
+_EBTR0_ON_7L                      000000FE
+_EBTR1_OFF_7L                     000000FF
+_EBTR1_ON_7L                      000000FD
+_EBTR2_OFF_7L                     000000FF
+_EBTR2_ON_7L                      000000FB
+_EBTR3_OFF_7L                     000000FF
+_EBTR3_ON_7L                      000000F7
+_EBTRB_OFF_7H                     000000FF
+_EBTRB_ON_7H                      000000BF
+_FCMEN_OFF_1H                     000000BF
+_FCMEN_ON_1H                      000000FF
+_IDLOC0                           00200000
+_IDLOC1                           00200001
+_IDLOC2                           00200002
+_IDLOC3                           00200003
+_IDLOC4                           00200004
+_IDLOC5                           00200005
+_IDLOC6                           00200006
+_IDLOC7                           00200007
+_IESO_OFF_1H                      0000007F
+_IESO_ON_1H                       000000FF
+_LPT1OSC_OFF_3H                   000000FB
+_LPT1OSC_ON_3H                    000000FF
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 22
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_LVP_OFF_4L                       000000FB
+_LVP_ON_4L                        000000FF
+_MCLRE_OFF_3H                     0000007F
+_MCLRE_ON_3H                      000000FF
+_OSC_ECIO6_1H                     000000F5
+_OSC_EC_1H                        000000F4
+_OSC_HSPLL_1H                     000000F6
+_OSC_HS_1H                        000000F2
+_OSC_INTIO67_1H                   000000F8
+_OSC_INTIO7_1H                    000000F9
+_OSC_LP_1H                        000000F0
+_OSC_RCIO6_1H                     000000F7
+_OSC_RC_1H                        000000F3
+_OSC_XT_1H                        000000F1
+_PBADEN_OFF_3H                    000000FD
+_PBADEN_ON_3H                     000000FF
+_PWRT_OFF_2L                      000000FF
+_PWRT_ON_2L                       000000FE
+_STVREN_OFF_4L                    000000FE
+_STVREN_ON_4L                     000000FF
+_WDTPS_1024_2H                    000000F5
+_WDTPS_128_2H                     000000EF
+_WDTPS_16384_2H                   000000FD
+_WDTPS_16_2H                      000000E9
+_WDTPS_1_2H                       000000E1
+_WDTPS_2048_2H                    000000F7
+_WDTPS_256_2H                     000000F1
+_WDTPS_2_2H                       000000E3
+_WDTPS_32768_2H                   000000FF
+_WDTPS_32_2H                      000000EB
+_WDTPS_4096_2H                    000000F9
+_WDTPS_4_2H                       000000E5
+_WDTPS_512_2H                     000000F3
+_WDTPS_64_2H                      000000ED
+_WDTPS_8192_2H                    000000FB
+_WDTPS_8_2H                       000000E7
+_WDT_OFF_2H                       000000FE
+_WDT_ON_2H                        000000FF
+_WRT0_OFF_6L                      000000FF
+_WRT0_ON_6L                       000000FE
+_WRT1_OFF_6L                      000000FF
+_WRT1_ON_6L                       000000FD
+_WRT2_OFF_6L                      000000FF
+_WRT2_ON_6L                       000000FB
+_WRT3_OFF_6L                      000000FF
+_WRT3_ON_6L                       000000F7
+_WRTB_OFF_6H                      000000FF
+_WRTB_ON_6H                       000000BF
+_WRTC_OFF_6H                      000000FF
+_WRTC_ON_6H                       000000DF
+_WRTD_OFF_6H                      000000FF
+_WRTD_ON_6H                       0000007F
+_XINST_OFF_4L                     000000BF
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 23
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_XINST_ON_4L                      000000FF
+__18F4520                         00000001
+bABDEN                            BIT0
+bABDOVF                           BIT7
+bADC_ACQ0                         0<<3
+bADC_ACQ12                        5<<3
+bADC_ACQ16                        6<<3
+bADC_ACQ2                         1<<3
+bADC_ACQ20                        7<<3
+bADC_ACQ4                         2<<3
+bADC_ACQ6                         3<<3
+bADC_ACQ8                         4<<3
+bADC_CH0                          0<<2
+bADC_CH1                          1<<2
+bADC_CH10                         10<<2
+bADC_CH11                         11<<2
+bADC_CH12                         12<<2
+bADC_CH2                          2<<2
+bADC_CH3                          3<<2
+bADC_CH4                          4<<2
+bADC_CH5                          5<<2
+bADC_CH6                          6<<2
+bADC_CH7                          7<<2
+bADC_CH8                          8<<2
+bADC_CH9                          9<<2
+bADC_CLK_DIV16                    5
+bADC_CLK_DIV2                     0
+bADC_CLK_DIV32                    2
+bADC_CLK_DIV4                     4
+bADC_CLK_DIV64                    6
+bADC_CLK_DIV8                     1
+bADC_CLK_RC                       3
+bADC_EXT_NREF                     BIT5
+bADC_EXT_PREF                     BIT4
+bADC_GO                           BIT1
+bADC_ON                           BIT0
+bADDEN                            BIT3
+bADFM                             BIT7
+bADIE                             BIT6
+bADIF                             BIT6
+bADIP                             BIT6
+bAS_AC_HIGH                       BIT2
+bAS_AC_HIGHZ                      3<<2
+bAS_AC_LOW                        0
+bAS_BD_HIGH                       1
+bAS_BD_HIGHZ                      3
+bAS_BD_LOW                        0
+bAS_CMP                           3<<4
+bAS_CMP1                          1<<4
+bAS_CMP2                          2<<4
+bAS_INT0                          4<<4
+bAS_INT0CMP                       7<<4
+bAS_INT0CMP1                      5<<4
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 24
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+bAS_INT0CMP2                      6<<4
+bAS_OFF                           0
+bBCLIE                            BIT3
+bBCLIF                            BIT3
+bBCLIP                            BIT3
+bBF                               BIT0
+bBRG16                            BIT3
+bBRGH                             BIT2
+bC1INV                            BIT4
+bC1OUT                            BIT6
+bC2INV                            BIT5
+bC2OUT                            BIT7
+bCCP1IE                           BIT2
+bCCP1IF                           BIT2
+bCCP1IP                           BIT2
+bCCP2IE                           BIT0
+bCCP2IF                           BIT0
+bCCP2IP                           BIT0
+bCCP_CAPTURE_16RISING             7
+bCCP_CAPTURE_4RISING              6
+bCCP_CAPTURE_FALLING              4
+bCCP_CAPTURE_RISING               5
+bCCP_COMPARE_INT                  10
+bCCP_COMPARE_RESET                9
+bCCP_COMPARE_SET                  8
+bCCP_COMPARE_SPECIAL              11
+bCCP_COMPARE_TOGGLE               2
+bCCP_OFF                          0
+bCCP_PWM                          12
+bCFGS                             BIT6
+bCIS                              BIT3
+bCKE                              BIT6
+bCKP                              BIT4
+bCLKINT_125k                      BIT4
+bCLKINT_1M                        BIT6
+bCLKINT_250k                      BIT5
+bCLKINT_2M                        (BIT6 | BIT4)
+bCLKINT_31k                       0
+bCLKINT_4M                        (BIT6 | BIT5)
+bCLKINT_500k                      (BIT5 | BIT4)
+bCLKINT_8M                        (BIT6 | BIT5 | BIT4)
+bCMIE                             BIT6
+bCMIF                             BIT6
+bCMIP                             BIT6
+bCREN                             BIT4
+bCSRC                             BIT7
+bCVREN                            BIT7
+bCVROE                            BIT6
+bCVRR                             BIT5
+bCVRSS                            BIT4
+bDATA                             BIT5
+bECCPASE                          BIT7
+bECCP_PWM_ABCD_HIGH               12
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 25
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+bECCP_PWM_AC_HIGH                 13
+bECCP_PWM_BD_HIGH                 14
+bECCP_PWM_FULL_FWD                BIT6
+bECCP_PWM_FULL_REV                (BIT7 | BIT6)
+bECCP_PWM_HALF                    BIT7
+bECCP_PWM_LOW                     15
+bECCP_PWM_SINGLE                  0
+bEEIE                             BIT4
+bEEIF                             BIT4
+bEEIP                             BIT4
+bEEPGD                            BIT7
+bFERR                             BIT2
+bFREE                             BIT4
+bGIE                              BIT7
+bGIEH                             BIT7
+bGIEL                             BIT6
+bHLVD2V17                         0
+bHLVD2V23                         1
+bHLVD2V36                         2
+bHLVD2V44                         3
+bHLVD2V60                         4
+bHLVD2V79                         5
+bHLVD2V89                         6
+bHLVD3V12                         7
+bHLVD3V39                         8
+bHLVD3V55                         9
+bHLVD3V71                         10
+bHLVD3V90                         11
+bHLVD4V11                         12
+bHLVD4V33                         13
+bHLVD4V59                         14
+bHLVDEN                           BIT4
+bHLVD_EXT                         15
+bI2C_MST_1                        8
+bI2C_MST_2                        11
+bI2C_SLV_ADD10                    7
+bI2C_SLV_ADD10I                   15
+bI2C_SLV_ADD7                     6
+bI2C_SLV_ADD7I                    14
+bIDLEN                            BIT7
+bINT0IE                           BIT4
+bINT0IF                           BIT1
+bINT1IE                           BIT3
+bINT1IF                           BIT0
+bINT1IP                           BIT6
+bINT2IE                           BIT4
+bINT2IF                           BIT1
+bINT2IP                           BIT7
+bINTEDG0                          BIT6
+bINTEDG1                          BIT5
+bINTEDG2                          BIT4
+bINTSRC                           BIT7
+bIOFS                             BIT2
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 26
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+bIPEN                             BIT7
+bIRVST                            BIT5
+bLVDIE                            BIT2
+bLVDIF                            BIT2
+bLVDIP                            BIT2
+bNBOR                             BIT0
+bNPD                              BIT2
+bNPOR                             BIT1
+bNRBPU                            BIT7
+bNRI                              BIT4
+bNTO                              BIT3
+bOERR                             BIT1
+bOSCFIE                           BIT7
+bOSCFIF                           BIT7
+bOSCFIP                           BIT7
+bOSC_INT                          3
+bOSC_PRI                          0
+bOSC_SEC                          1
+bOSTS                             BIT3
+bPEIE                             BIT6
+bPLLEN                            BIT6
+bPRSEN                            BIT7
+bPSA                              BIT3
+bPSPIE                            BIT7
+bPSPIF                            BIT7
+bPSPIP                            BIT7
+bRBIE                             BIT3
+bRBIF                             BIT0
+bRBIO                             BIT0
+bRCIDL                            BIT6
+bRCIE                             BIT5
+bRCIF                             BIT5
+bRCIP                             BIT5
+bRD                               BIT0
+bRD16                             BIT7
+bRW                               BIT2
+bRX9                              BIT6
+bRX9D                             BIT0
+bRXDTP                            BIT5
+bSBOREN                           BIT6
+bSENDB                            BIT3
+bSMP                              BIT7
+bSPEN                             BIT7
+bSPI_MST_16                       1
+bSPI_MST_4                        0
+bSPI_MST_64                       2
+bSPI_MST_TMR2                     3
+bSPI_SLAVE                        5
+bSPI_SLAVE_SS                     4
+bSREN                             BIT5
+bSSPEN                            BIT5
+bSSPIE                            BIT3
+bSSPIF                            BIT3
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 27
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+bSSPIP                            BIT3
+bSSPOV                            BIT6
+bSTART                            BIT3
+bSTOP                             BIT4
+bSWDTEN                           BIT0
+bSYNC                             BIT4
+bT08BIT                           BIT6
+bT0CLK_PRE128                     6
+bT0CLK_PRE16                      3
+bT0CLK_PRE2                       0
+bT0CLK_PRE256                     7
+bT0CLK_PRE32                      4
+bT0CLK_PRE4                       1
+bT0CLK_PRE64                      5
+bT0CLK_PRE8                       2
+bT0CS                             BIT5
+bT0SE                             BIT4
+bT1CCP12                          0
+bT1CCP1_T3CCP2                    BIT3
+bT1CLK_EXT                        BIT1
+bT1CLK_PRE1                       0
+bT1CLK_PRE2                       BIT4
+bT1CLK_PRE4                       BIT5
+bT1CLK_PRE8                       (BIT5 | BIT4)
+bT1OSCEN                          BIT3
+bT1RUN                            BIT6
+bT1SYNC                           BIT2
+bT2CLK_PRE1                       0
+bT2CLK_PRE2                       1
+bT2CLK_PRE4                       2
+bT2CLK_PRE8                       3
+bT2OUTPS_1                        0
+bT2OUTPS_10                       9<<3
+bT2OUTPS_11                       10<<3
+bT2OUTPS_12                       11<<3
+bT2OUTPS_13                       12<<3
+bT2OUTPS_14                       13<<3
+bT2OUTPS_15                       14<<3
+bT2OUTPS_16                       15<<3
+bT2OUTPS_2                        1<<3
+bT2OUTPS_3                        2<<3
+bT2OUTPS_4                        3<<3
+bT2OUTPS_5                        4<<3
+bT2OUTPS_6                        5<<3
+bT2OUTPS_7                        6<<3
+bT2OUTPS_8                        7<<3
+bT2OUTPS_9                        8<<3
+bT3CCP12                          (BIT3 | BIT6)
+bT3CLK_EXT                        BIT1
+bT3CLK_PRE1                       0
+bT3CLK_PRE2                       BIT4
+bT3CLK_PRE4                       BIT5
+bT3CLK_PRE8                       (BIT5 | BIT4)
+MPASM  5.35                   EXEMPLO_8_1.ASM   3-22-2010  23:36:02         PAGE 28
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+bT3SYNC                           BIT2
+bTMR0IE                           BIT5
+bTMR0IF                           BIT2
+bTMR0IP                           BIT2
+bTMR0ON                           BIT7
+bTMR1IE                           BIT0
+bTMR1IF                           BIT0
+bTMR1IP                           BIT0
+bTMR1ON                           BIT0
+bTMR2IE                           BIT1
+bTMR2IF                           BIT1
+bTMR2IP                           BIT1
+bTMR2ON                           BIT2
+bTMR3IE                           BIT1
+bTMR3IF                           BIT1
+bTMR3IP                           BIT1
+bTMR3ON                           BIT0
+bTRMT                             BIT1
+bTX9                              BIT6
+bTX9D                             BIT0
+bTXCKP                            BIT4
+bTXEN                             BIT5
+bTXIE                             BIT4
+bTXIF                             BIT4
+bTXIP                             BIT4
+bUA                               BIT1
+bWCOL                             BIT7
+bWR                               BIT1
+bWREN                             BIT2
+bWRERR                            BIT3
+bWUE                              BIT1
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : XXXX----XXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXX-- ----------------
+0000 : -XXX-XX-XXXXXX-- ---------------- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Bytes Used:    53
+Program Memory Bytes Free: 32715
+
+
+Errors   :     0
+Warnings :     0 reported,     0 suppressed
+Messages :     0 reported,     0 suppressed
+
+
