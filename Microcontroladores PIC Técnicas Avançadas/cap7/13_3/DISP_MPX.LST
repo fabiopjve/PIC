@@ -1,0 +1,321 @@
+MPASM 03.20 Released         DISP_MPX.ASM   1-6-2003  15:45:34         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ;Display multiplexado
+Warning[205]: Found directive in column 1. (LIST)
+                      00002 LIST  P=16F627
+Warning[205]: Found directive in column 1. (INCLUDE)
+                      00003 INCLUDE <P16F627.INC>
+                      00001         LIST
+                      00002 ; P16F627.INC  Standard Header File, Version 1.01    Microchip Technology, Inc.
+                      00261         LIST
+Warning[205]: Found directive in column 1. (__CONFIG)
+2007   3F18           00004 __CONFIG _CP_OFF & _WDT_OFF & _PWRTE_OFF & _BODEN_OFF & _MCLRE_OFF & _INTRC_OSC_NOCLKOUT & _LVP_OFF
+  00000020            00005 DESLOCAMENTO    EQU 0x20
+  00000021            00006 D0              EQU 0x21
+  00000022            00007 D1              EQU 0x22
+  00000023            00008 D2              EQU 0x23
+Warning[205]: Found directive in column 1. (ORG)
+0000                  00009 ORG 0x0000
+0000   2834           00010         GOTO    INICIO
+0001                  00011 DECOD_DISPLAY:
+0001   00A0           00012         MOVWF   DESLOCAMENTO    ; armazena o número na variável deslocamento
+0002   300A           00013         MOVLW   LOW TABELA      ; copia em W os 8 bits LSB do endereço da TABELA
+0003   07A0           00014         ADDWF   DESLOCAMENTO,F  ; adiciona o valor à variável DESLOCAMENTO
+0004   3000           00015         MOVLW   HIGH TABELA     ; copia em W os 5 bits superiores do endereço da TABELA
+0005   1803           00016         BTFSC   STATUS,C        ; testa para ver se a soma anterior transbordou 
+0006   3E01           00017         ADDLW   0x01            ; se transbordou, soma 1 ao W
+0007   008A           00018         MOVWF   PCLATH          ; acerta o PCLATH de acordo com o endereço da 
+                      00019                                 ; TABELA
+0008   0820           00020         MOVF    DESLOCAMENTO,W  ; copia o valor do DESLOCAMENTO para o W
+0009   0082           00021         MOVWF   PCL             ; copia o W para o PCL (desvia para a tabela)
+000A                  00022 TABELA:
+000A   343F           00023         RETLW   B'00111111'     ; número 0
+000B   3406           00024         RETLW   B'00000110'     ; número 1
+000C   345B           00025         RETLW   B'01011011'     ; número 2
+000D   344F           00026         RETLW   B'01001111'     ; número 3
+000E   3466           00027         RETLW   B'01100110'     ; número 4
+000F   346D           00028         RETLW   B'01101101'     ; número 5
+0010   347D           00029         RETLW   B'01111101'     ; número 6
+0011   3407           00030         RETLW   B'00000111'     ; número 7
+0012   347F           00031         RETLW   B'01111111'     ; número 8
+0013   3467           00032         RETLW   B'01100111'     ; número 9
+0014   3477           00033         RETLW   B'01110111'     ; dígito A      
+0015   347C           00034         RETLW   B'01111100'     ; dígito B
+0016   3439           00035         RETLW   B'00111001'     ; dígito C
+0017   345E           00036         RETLW   B'01011110'     ; dígito D
+0018   3479           00037         RETLW   B'01111001'     ; dígito E
+0019   3471           00038         RETLW   B'01110001'     ; dígito F
+001A                  00039 ATRASO:                         ; Sub-rotina de atraso
+001A   3E01           00040         ADDLW   1               ; soma 1 ao W
+001B   1903           00041         BTFSC   STATUS,Z        ; testa se W=0 ...
+001C   0008           00042         RETURN                  ; se W=0, retorna
+001D   281A           00043         GOTO    ATRASO          ; se W diferente de 0, desvia para ATRASO_LOOP
+001E                  00044 DISPLAY:
+001E   0821           00045         MOVF    D0,W            ; copia o dígito em W
+001F   2001           00046         CALL    DECOD_DISPLAY   ; decodifica o dígito
+MPASM 03.20 Released         DISP_MPX.ASM   1-6-2003  15:45:34         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0020   0086           00047         MOVWF   PORTB           ; ativa os segmentos do display
+0021   1105           00048         BCF     PORTA,2         ; ativa display 3
+0022   0103           00049         CLRW                    ; W=0
+0023   201A           00050         CALL    ATRASO          ; espera
+0024   1505           00051         BSF     PORTA,2         ; desativa display 3
+0025   0822           00052         MOVF    D1,W            ; copia o próximo dígito em W
+0026   2001           00053         CALL    DECOD_DISPLAY   ; decodifica o display
+0027   0086           00054         MOVWF   PORTB           ; ativa os segmentos
+0028   1085           00055         BCF     PORTA,1         ; ativa display 2
+0029   0103           00056         CLRW                    ; W=0
+002A   201A           00057         CALL    ATRASO          ; espera
+002B   1485           00058         BSF     PORTA,1         ; desativa display 2
+002C   0823           00059         MOVF    D2,W            ; copia o último dígito em W
+002D   2001           00060         CALL    DECOD_DISPLAY   ; decodifica display
+002E   0086           00061         MOVWF   PORTB           ; ativa os segmentos
+002F   1005           00062         BCF     PORTA,0         ; ativa o display 1
+0030   0103           00063         CLRW                    ; W=0
+0031   201A           00064         CALL    ATRASO          ; espera
+0032   1405           00065         BSF     PORTA,0         ; desativa o display 1
+0033   0008           00066         RETURN                  ; retorna
+                      00067 
+0034                  00068 INICIO:
+                      00069 ; primeiramente vamos inicializar as portas como saídas 
+0034   3007           00070         MOVLW   B'00000111'
+0035   009F           00071         MOVWF   CMCON           ; configura os comparadores analógicos para modo 7
+0036   1683 1303      00072         BANKSEL TRISA           ;
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0038   0185           00073         CLRF    TRISA           ; configura a porta A para saídas
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0039   0186           00074         CLRF    TRISB           ; configura a porta B para saídas
+003A   1283 1303      00075         BANKSEL PORTB           ;
+003C   3007           00076         MOVLW   B'00000111'     ; desliga os catodos dos três ...
+003D   0085           00077         MOVWF   PORTA           ; ... displays
+003E   3003           00078         MOVLW   D'3'            ; display 1=3
+003F   00A3           00079         MOVWF   D2              ;
+0040   3002           00080         MOVLW   D'2'            ; display 2=2
+0041   00A2           00081         MOVWF   D1              ;
+0042   3001           00082         MOVLW   D'1'            ; display 3=1
+0043   00A1           00083         MOVWF   D0              ;
+                      00084 
+0044                  00085 LOOP_PRINCIPAL:
+0044   201E           00086         CALL    DISPLAY         ; mostra display
+0045   2844           00087         GOTO    LOOP_PRINCIPAL  ; 
+Warning[205]: Found directive in column 1. (END)
+                      00088 END
+MPASM 03.20 Released         DISP_MPX.ASM   1-6-2003  15:45:34         PAGE  3
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ADEN                              00000003
+ATRASO                            0000001A
+BRGH                              00000002
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1H                            00000016
+CCPR1L                            00000015
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+CREN                              00000004
+CSRC                              00000007
+D0                                00000021
+D1                                00000022
+D2                                00000023
+DC                                00000001
+DECOD_DISPLAY                     00000001
+DESLOCAMENTO                      00000020
+DISPLAY                           0000001E
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+EEIE                              00000007
+EEIF                              00000007
+F                                 00000001
+FERR                              00000002
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+INICIO                            00000034
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+LOOP_PRINCIPAL                    00000044
+MPASM 03.20 Released         DISP_MPX.ASM   1-6-2003  15:45:34         PAGE  4
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+OERR                              00000001
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIR1                              0000000C
+PORTA                             00000005
+PORTB                             00000006
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+RX9D                              00000000
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+STATUS                            00000003
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1OSCEN                           00000003
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TABELA                            0000000A
+TMR0                              00000001
+MPASM 03.20 Released         DISP_MPX.ASM   1-6-2003  15:45:34         PAGE  5
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISB                             00000086
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+VROE                              00000006
+VRR                               00000005
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_CP_50                            00002BFF
+_CP_75                            000017FF
+_CP_ALL                           000003FF
+_CP_OFF                           00003FFF
+_DATA_CP_OFF                      00003FFF
+_DATA_CP_ON                       00003EFF
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_HS_OSC                           00003FEE
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+MPASM 03.20 Released         DISP_MPX.ASM   1-6-2003  15:45:34         PAGE  6
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FED
+__16F627                          00000001
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0040 : XXXXXX---------- ---------------- ---------------- ----------------
+2000 : -------X-------- ---------------- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Words Used:    70
+Program Memory Words Free:   954
+
+
+Errors   :     0
+Warnings :     5 reported,     0 suppressed
+Messages :     2 reported,     0 suppressed
+
+

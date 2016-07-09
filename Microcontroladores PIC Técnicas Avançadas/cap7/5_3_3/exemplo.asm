@@ -1,0 +1,38 @@
+LIST 	P=16F627
+INCLUDE <P16F627.INC>
+__CONFIG _CP_OFF & _WDT_OFF & _PWRTE_OFF & _BODEN_OFF & _MCLRE_OFF & _INTRC_OSC_NOCLKOUT & _LVP_OFF
+A0	EQU 0x20
+B0	EQU 0x21
+B1	EQU 0x22
+ORG	0x0000
+	GOTO	INICIO
+MULT8	MACRO	BIT
+	BTFSC	A0, BIT
+	ADDWF	B1,F
+	RRF	B1,F
+	RRF	B0,F
+	ENDM
+MULTIPLICA8X8:
+	MOVF	B0, W
+	CLRF	B0
+	CLRF	B1
+	BCF	STATUS,C
+	MULT8	0
+	MULT8	1
+	MULT8	2
+	MULT8	3
+	MULT8	4
+	MULT8	5
+	MULT8	6
+	MULT8	7
+	RETURN
+INICIO:
+	MOVLW	D'90'		
+	MOVWF	A0			; A0=90 decimal
+	MOVLW	D'5'
+	MOVWF	B0			; B0=5 decimal
+	CALL	MULTIPLICA8X8		; chamada da sub-rotina de multiplicação
+	SLEEP				; fim do programa
+END
+; o resultado final do programa será B0=0xC2 e B1=0x01 (B=0x01C2 ou 
+; 450 decimal) Z=’0’, C=’0’ e DC=’0’

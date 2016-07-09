@@ -1,0 +1,1152 @@
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ; Relógio digital com alarme
+Warning[205]: Found directive in column 1. (LIST)
+                      00002 LIST  P=16F627
+Warning[205]: Found directive in column 1. (INCLUDE)
+                      00003 INCLUDE <P16F627.INC>
+                      00001         LIST
+                      00002 ; P16F627.INC  Standard Header File, Version 1.01    Microchip Technology, Inc.
+                      00261         LIST
+Warning[205]: Found directive in column 1. (INCLUDE)
+                      00004 INCLUDE <MACROS.ASM>
+                      00001 ; Este arquivo de macros pode ser incluído livremente em qualquer programa.
+                      00002 ; Para isto basta utilizar a diretiva INCLUDE <MACROS.ASM>
+                      00003 INCW    MACRO
+                      00004         ADDLW  0x01
+                      00005         ENDM
+                      00006 DECW    MACRO
+                      00007         ADDLW  0XFF
+                      00008         ENDM
+                      00009 COMW    MACRO
+                      00010         XORWF   0xFF
+                      00011         ENDM
+                      00012 BSW     MACRO   BIT
+                      00013         IF (BIT==0)
+                      00014                 IORLW   B'00000001'
+                      00015         ENDIF
+                      00016         IF (BIT==1)
+                      00017                 IORLW   B'00000010'
+                      00018         ENDIF
+                      00019         IF (BIT==2)
+                      00020                 IORLW   B'00000100'
+                      00021         ENDIF
+                      00022         IF (BIT==3)
+                      00023                 IORLW   B'00001000'
+                      00024         ENDIF
+                      00025         IF (BIT==4)
+                      00026                 IORLW   B'00010000'
+                      00027         ENDIF
+                      00028         IF (BIT==5)
+                      00029                 IORLW   B'00100000'
+                      00030         ENDIF
+                      00031         IF (BIT==6)
+                      00032                 IORLW   B'01000000'
+                      00033         ENDIF
+                      00034         IF (BIT==7)
+                      00035                 IORLW   B'10000000'
+                      00036         ENDIF
+                      00037         ENDM
+                      00038 BCW     MACRO   BIT
+                      00039         IF (BIT==0)
+                      00040                 ANDLW   B'11111110'
+                      00041         ENDIF
+                      00042         IF (BIT==1)
+                      00043                 ANDLW   B'11111101'
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00044         ENDIF
+                      00045         IF (BIT==2)
+                      00046                 ANDLW   B'11111011'
+                      00047         ENDIF
+                      00048         IF (BIT==3)
+                      00049                 ANDLW   B'11110111'
+                      00050         ENDIF
+                      00051         IF (BIT==4)
+                      00052                 ANDLW   B'11101111'
+                      00053         ENDIF
+                      00054         IF (BIT==5)
+                      00055                 ANDLW   B'11011111'
+                      00056         ENDIF
+                      00057         IF (BIT==6)
+                      00058                 ANDLW   B'10111111'
+                      00059         ENDIF
+                      00060         IF (BIT==7)
+                      00061                 ANDLW   B'01111111'
+                      00062         ENDIF
+                      00063         ENDM
+                      00064 JPE     MACRO   ENDER,REG,VAL
+                      00065         MOVLW   VAL
+                      00066         SUBWF   REG,W
+                      00067         BTFSC   STATUS,Z
+                      00068         GOTO    ENDER
+                      00069         ENDM
+                      00070 JPNE    MACRO   ENDER,REG,VAL
+                      00071         MOVLW   VAL
+                      00072         SUBWF   REG,W
+                      00073         BTFSS   STATUS,Z
+                      00074         GOTO    ENDER
+                      00075         ENDM
+                      00076 JPL     MACRO   ENDER,REG,VAL
+                      00077         SUBLW   VAL
+                      00078         BTFSS   STATUS,C
+                      00079         GOTO    ENDER
+                      00080         ENDM
+                      00081 JPLS    MACRO   ENDER,REG,VAL
+                      00082         SUBLW   VAL
+                      00083         BTFSS   STATUS,C
+                      00084         GOTO    ENDER
+                      00085         BTFSC   STATUS,Z
+                      00086         GOTO    ENDER
+                      00087         ENDM
+                      00088 JPG     MACRO   ENDER,REG,VAL
+                      00089         SUBLW   VAL
+                      00090         BTFSC   STATUS,C
+                      00091         GOTO    JPG_FIM
+                      00092         BTFSS   STATUS,Z
+                      00093         GOTO    ENDER
+                      00094 JPG_FIM:
+                      00095         ENDM
+                      00096 JPGS    MACRO   ENDER,REG,VAL
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00097         SUBLW   VAL
+                      00098         BTFSC   STATUS,C
+                      00099         GOTO    ENDER
+                      00100         ENDM
+                      00101 JPWZ    MACRO   ENDER
+                      00102         ANDLW   0XFF
+                      00103         BTFSC   STATUS,Z
+                      00104         GOTO    ENDER
+                      00105         ENDM
+                      00106 JPWNZ   MACRO   ENDER
+                      00107         ANDLW   0XFF
+                      00108         BTFSS   STATUS,Z
+                      00109         GOTO    ENDER
+                      00110         ENDM
+                      00111 COMBF   MACRO   REG,BIT
+                      00112         IF (BIT==0)
+                      00113                 MOVLW   B'00000001'
+                      00114         ENDIF
+                      00115         IF (BIT==1)
+                      00116                 MOVLW   B'00000010'
+                      00117         ENDIF
+                      00118         IF (BIT==2)
+                      00119                 MOVLW   B'00000100'
+                      00120         ENDIF
+                      00121         IF (BIT==3)
+                      00122                 MOVLW   B'00001000'
+                      00123         ENDIF
+                      00124         IF (BIT==4)
+                      00125                 MOVLW   B'00010000'
+                      00126         ENDIF
+                      00127         IF (BIT==5)
+                      00128                 MOVLW   B'00100000'
+                      00129         ENDIF
+                      00130         IF (BIT==6)
+                      00131                 MOVLW   B'01000000'
+                      00132         ENDIF
+                      00133         IF (BIT==7)
+                      00134                 MOVLW   B'10000000'
+                      00135         ENDIF
+                      00136         XORWF   REG,F
+                      00137         ENDM
+                      00138 ; MACRO para Multiplicação com RLF. Incluída no arquivo MACROS.ASM
+                      00139 ; Utilização: MULT2 <registrador>,<valor múltiplo de potência de 2>
+                      00140 MULT2   MACRO   REG,VAL
+                      00141         BCF     STATUS,C                ; limpa o flag de carry
+                      00142         IF (VAL==2)
+                      00143                 RLF     REG,F           ; rotaciona o registrador à esquerda
+                      00144                                         ; o que equivale a multiplicar por 2
+                      00145         ENDIF
+                      00146         IF (VAL==4)
+                      00147                 RLF     REG,F           ; multiplica por 2
+                      00148                 BCF     STATUS,C        ; zera carry para não atrapalhar a pró
+                      00149                                         ; xima multiplicação
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00150                 RLF     REG,F           ; multiplica novamente por 2 (total 4)
+                      00151         ENDIF
+                      00152         IF (VAL==8)
+                      00153                 RLF     REG,F           ; multiplica por 2
+                      00154                 BCF     STATUS,C        ; zera carry
+                      00155                 RLF     REG,F           ; multiplica novamente por 2 (total 4)
+                      00156                 BCF     STATUS,C        ; zera carry
+                      00157                 RLF     REG,F           ; multiplica novamente por 2 (total 8)
+                      00158         ENDIF
+                      00159         IF (VAL==16)
+                      00160                 RLF     REG,F           ; multiplica por 2
+                      00161                 BCF     STATUS,C        ; zera carry
+                      00162                 RLF     REG,F           ; multiplica novamente por 2 (total 4)
+                      00163                 BCF     STATUS,C        ; zera carry
+                      00164                 RLF     REG,F           ; multiplica novamente por 2 (total 8)
+                      00165                 BCF     STATUS,C        ; zera carry
+                      00166                 RLF     REG,F           ; multiplica novamente por 2 (total 16)
+                      00167         ENDIF
+                      00168         IF (VAL==32)
+                      00169                 RLF     REG,F           ; multiplica por 2
+                      00170                 BCF     STATUS,C        ; zera carry
+                      00171                 RLF     REG,F           ; multiplica novamente por 2 (total 4)
+                      00172                 BCF     STATUS,C        ; zera carry
+                      00173                 RLF     REG,F           ; multiplica novamente por 2 (total 8)
+                      00174                 BCF     STATUS,C        ; zera carry
+                      00175                 RLF     REG,F           ; multiplica novamente por 2 (total 16)                 
+                      00176                 BCF     STATUS,C        ; zera carry
+                      00177                 RLF     REG,F           ; multiplica novamente por 2 (total 32)
+                      00178         ENDIF
+                      00179         ENDM
+                      00180 ; MACRO para Divisão com RRF. Esta macro está incluída no arquivo MACROS.ASM
+                      00181 ; Utilização: DIV2 <registrador>,<valor múltiplo de potência de 2>
+                      00182 DIV2    MACRO   REG,VAL
+                      00183         BCF     STATUS,C                ; limpa o flag de carry
+                      00184         IF (VAL==2)
+                      00185                 RRF     REG,F           ; rotaciona o registrador à esquerda
+                      00186                                         ; o que equivale a divider por 2
+                      00187         ENDIF
+                      00188         IF (VAL==4)
+                      00189                 RRF     REG,F           ; divide por 2
+                      00190                 BCF     STATUS,C        ; zera carry para não atrapalhar a pró
+                      00191                                         ; xima divisão
+                      00192                 RRF     REG,F           ; divide novamente por 2 (total 4)
+                      00193         ENDIF
+                      00194         IF (VAL==8)
+                      00195                 RRF     REG,F           ; divide por 2
+                      00196                 BCF     STATUS,C        ; zera carry
+                      00197                 RRF     REG,F           ; divide novamente por 2 (total 4)
+                      00198                 BCF     STATUS,C        ; zera carry
+                      00199                 RRF     REG,F           ; divide novamente por 2 (total 8)
+                      00200         ENDIF
+                      00201         IF (VAL==16)
+                      00202                 RRF     REG,F           ; divide por 2
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00203                 BCF     STATUS,C        ; zera carry
+                      00204                 RRF     REG,F           ; divide novamente por 2 (total 4)
+                      00205                 BCF     STATUS,C        ; zera carry
+                      00206                 RRF     REG,F           ; divide novamente por 2 (total 8)
+                      00207                 BCF     STATUS,C        ; zera carry
+                      00208                 RRF     REG,F           ; divide novamente por 2 (total 16)
+                      00209         ENDIF
+                      00210         IF (VAL==32)
+                      00211                 RRF     REG,F           ; divide por 2
+                      00212                 BCF     STATUS,C        ; zera carry
+                      00213                 RRF     REG,F           ; divide novamente por 2 (total 4)
+                      00214                 BCF     STATUS,C        ; zera carry
+                      00215                 RRF     REG,F           ; divide novamente por 2 (total 8)
+                      00216                 BCF     STATUS,C        ; zera carry
+                      00217                 RRF     REG,F           ; divide novamente por 2 (total 16)
+                      00218                 BCF     STATUS,C        ; zera carry
+                      00219                 RRF     REG,F           ; divide novamente por 2 (total 32)
+                      00220         ENDIF
+                      00221         ENDM
+                      00222 SALVA_CONTEXTO  MACRO
+                      00223         MOVWF   W_TEMP  ; salva o conteúdo do W em W_TEMP
+                      00224         SWAPF   STATUS,W        ; salva o conteúdo do STATUS ...
+                      00225         MOVWF   STATUS_TEMP     ; ... em STATUS_TEMP
+                      00226         ENDM
+                      00227 RESTAURA_CONTEXTO  MACRO
+                      00228         SWAPF   STATUS_TEMP,W   ; restaura o conteúdo do ...
+                      00229         MOVWF   STATUS  ; ... registrador STATUS
+                      00230         SWAPF   W_TEMP,F        ; restaura o conteúdo ...
+                      00231         SWAPF   W_TEMP,W        ; ... do registrador W
+                      00232         ENDM
+                      00233 
+                      00234 
+Warning[205]: Found directive in column 1. (__CONFIG)
+2007   3F18           00005 __CONFIG _CP_OFF & _WDT_OFF & _PWRTE_OFF & _BODEN_OFF & _MCLRE_OFF & _INTRC_OSC_NOCLKOUT & _LVP_OFF
+                      00006 ;
+                      00007 ; *************************************************************************************************
+                      00008 ; Definição das variáveis
+                      00009 ;
+  00000020            00010 HORA    EQU 0x20                ; registrador de armazenamento das horas (00 a 23)
+  00000021            00011 MINUTO  EQU 0x21                ; registrador de armazenamento dos minutos (00 a 59)
+  00000022            00012 H_AL    EQU 0x22                ; registrador de armazenamento das horas do alarme (00 a 23)
+  00000023            00013 M_AL    EQU 0x23                ; registrador de armazenamento dos minutos do alarma (00 a 59)
+  00000024            00014 TEMP    EQU 0x24                ; registrador temporário de uso geral
+  00000025            00015 TEMP1   EQU 0x25                ; registrador temporário de uso geral
+  00000026            00016 FLAGS   EQU 0x26                ; flags de estado do relógio
+  00000027            00017 SEG     EQU 0x27                ; segundos
+  00000028            00018 D0      EQU 0x28                ;
+  00000029            00019 D1      EQU 0x29                ;
+  0000002A            00020 W_TEMP  EQU 0x2A                ;
+  0000002B            00021 STATUS_TEMP EQU 0x2B            ;
+  0000002C            00022 T1_CONTA EQU 0x2C               ; contador auxiliar do timer 1
+  0000002D            00023 TECLA   EQU 0x2D                ; número da tecla pressionada
+  0000002E            00024 TECLA_C EQU 0x2E                ; temporizador das teclas
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00025 #DEFINE AL_ON FLAGS,0           ; indicador de alarme ligado
+                      00026 #DEFINE AL_DIS FLAGS,1          ; indicador de alarme disparado
+                      00027 #DEFINE MODO FLAGS,2            ; modo (0-relógio,1-alarme)
+                      00028 #DEFINE PONTO FLAGS,3           ; Pontos separadores HH:MM
+                      00029 #DEFINE S1 PORTB,0              ; Horas
+                      00030 #DEFINE S2 PORTB,1              ; Minutos
+                      00031 #DEFINE S3 PORTB,2              ; Modo
+                      00032 #DEFINE S4 PORTB,3              ; Alarme
+                      00033 #DEFINE DIS0 PORTA,0            ; Catodo do display DIS0
+                      00034 #DEFINE DIS1 PORTA,1            ; Catodo do display DIS1
+                      00035 #DEFINE DIS2 PORTA,2            ; Catodo do display DIS2
+                      00036 #DEFINE DIS3 PORTA,3            ; Catodo do display DIS3
+                      00037 #DEFINE LEDS PORTA,4            ; Catodo dos Leds 
+                      00038 #DEFINE PONTO1 0                ; Anodo do Led separador
+                      00039 #DEFINE PONTO2 1                ; Anodo do Led separador
+                      00040 #DEFINE LED_MH 2                ; Anodo do LED de modo hora
+                      00041 #DEFINE LED_MA 3                ; Anodo do LED de modo alarme
+                      00042 #DEFINE LED_AL 4                ; Anodo do LED de alarme ligado
+                      00043 #DEFINE BUZZER PORTB,7          ; Buzzer 
+                      00044 
+Warning[205]: Found directive in column 1. (ORG)
+0000                  00045 ORG 0x0000
+0000   2921           00046         GOTO    INICIO
+Warning[205]: Found directive in column 1. (ORG)
+0004                  00047 ORG 0x0004
+                      00048         SALVA_CONTEXTO          ; salva o contexto atual
+0004   00AA               M         MOVWF   W_TEMP  ; salva o conteúdo do W em W_TEMP
+0005   0E03               M         SWAPF   STATUS,W        ; salva o conteúdo do STATUS ...
+0006   00AB               M         MOVWF   STATUS_TEMP     ; ... em STATUS_TEMP
+0007   100C           00049         BCF     PIR1,TMR1IF     ; apaga flag de interrupção do timer 1
+0008   30DC           00050         MOVLW   0xDC            ; 
+0009   008E           00051         MOVWF   TMR1L           ;
+000A   300B           00052         MOVLW   0x0B            ;
+000B   008F           00053         MOVWF   TMR1H           ; inicializa o timer 1 em 3036 decimal
+000C   0BAC           00054         DECFSZ  T1_CONTA,F      ; decrementa a variável de contagem do timer 1
+000D   2822           00055         GOTO    FIM_INT         ; se diferente de zero sai da interrupção
+000E   3002           00056         MOVLW   2               ; 
+000F   00AC           00057         MOVWF   T1_CONTA        ; reinicializa a variaável de contagem em 2
+0010   0AA7           00058         INCF    SEG,F           ; incrementa 1 segundo
+0011   303C           00059         MOVLW   D'60'           ; verifica ...
+0012   0627           00060         XORWF   SEG,W           ; se passou de 59 segundos ...
+0013   1D03           00061         BTFSS   STATUS,Z        ;
+0014   2822           00062         GOTO    FIM_INT         ; se não, sai da interrupção
+0015   01A7           00063         CLRF    SEG             ; se passsou ...
+0016   0AA1           00064         INCF    MINUTO,F        ; incrementa 1 nos minutos
+0017   303C           00065         MOVLW   D'60'           ; verifica se passou ...
+0018   0621           00066         XORWF   MINUTO,W        ; ...
+0019   1D03           00067         BTFSS   STATUS,Z        ; de 59 minutos ...
+001A   2822           00068         GOTO    FIM_INT         ; se não passou, sai da interrupção
+001B   01A1           00069         CLRF    MINUTO          ; se passou, apaga os minutos
+001C   0AA0           00070         INCF    HORA,F          ; incrementa 1 hora
+001D   3018           00071         MOVLW   D'24'           ; verifica se passou de
+001E   0620           00072         XORWF   HORA,W          ; ...
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+001F   1D03           00073         BTFSS   STATUS,Z        ; 23 horas ...
+0020   2822           00074         GOTO    FIM_INT         ; se não passou, sai da subrotina
+0021   01A0           00075         CLRF    HORA            ; se passou, zera a hora
+0022                  00076 FIM_INT:
+                      00077         RESTAURA_CONTEXTO       ; restaura o contexto anterior
+0022   0E2B               M         SWAPF   STATUS_TEMP,W   ; restaura o conteúdo do ...
+0023   0083               M         MOVWF   STATUS  ; ... registrador STATUS
+0024   0EAA               M         SWAPF   W_TEMP,F        ; restaura o conteúdo ...
+0025   0E2A               M         SWAPF   W_TEMP,W        ; ... do registrador W
+0026   0009           00078         RETFIE                  ; retorna da interrupção
+0027                  00079 DECOD_DISPLAY:
+0027   00A4           00080         MOVWF   TEMP            ; armazena o número na variável deslocamento
+0028   3030           00081         MOVLW   LOW TABELA      ; copia em W os 8 bits LSB do endereço da TABELA
+0029   07A4           00082         ADDWF   TEMP,F          ; adiciona o valor à variável DESLOCAMENTO
+002A   3000           00083         MOVLW   HIGH TABELA     ; copia em W os 5 bits superiores do endereço da TABELA
+002B   1803           00084         BTFSC   STATUS,C        ; testa para ver se a soma anterior transbordou 
+002C   3E01           00085         ADDLW   0x01            ; se transbordou, soma 1 ao W
+002D   008A           00086         MOVWF   PCLATH          ; acerta o PCLATH de acordo com o endereço da TABELA
+002E   0824           00087         MOVF    TEMP,W          ; copia o valor do DESLOCAMENTO para o W
+002F   0082           00088         MOVWF   PCL             ; copia o W para o PCL (desvia para a tabela)
+0030                  00089 TABELA:
+0030   343F           00090         RETLW   B'00111111'     ; número 0
+0031   3406           00091         RETLW   B'00000110'     ; número 1
+0032   345B           00092         RETLW   B'01011011'     ; número 2
+0033   344F           00093         RETLW   B'01001111'     ; número 3
+0034   3466           00094         RETLW   B'01100110'     ; número 4
+0035   346D           00095         RETLW   B'01101101'     ; número 5
+0036   347D           00096         RETLW   B'01111101'     ; número 6
+0037   3407           00097         RETLW   B'00000111'     ; número 7
+0038   347F           00098         RETLW   B'01111111'     ; número 8
+0039   3467           00099         RETLW   B'01100111'     ; número 9
+003A   3477           00100         RETLW   B'01110111'     ; dígito A      
+003B   347C           00101         RETLW   B'01111100'     ; dígito B
+003C   3439           00102         RETLW   B'00111001'     ; dígito C
+003D   345E           00103         RETLW   B'01011110'     ; dígito D
+003E   3479           00104         RETLW   B'01111001'     ; dígito E
+003F   3471           00105         RETLW   B'01110001'     ; dígito F
+0040                  00106 ATRASO:                         ; Subrotina de atraso
+0040   3E01           00107         ADDLW   1               ; soma 1 ao W
+0041   1903           00108         BTFSC   STATUS,Z        ; testa se W=0 ...
+0042   0008           00109         RETURN                  ; se W=0, retorna
+0043   2840           00110         GOTO    ATRASO          ; se W diferente de 0, desvia para ATRASO_LOOP
+0044                  00111 DISPLAY:
+0044   1926           00112         BTFSC   MODO            ;
+0045   286F           00113         GOTO    MOSTRA_ALARME   ;
+0046   0821           00114         MOVF    MINUTO,W        ; copia o dígito em W
+0047   20A8           00115         CALL    BIN8DEC         ;
+0048   0828           00116         MOVF    D0,W            ;
+0049   2027           00117         CALL    DECOD_DISPLAY   ; decodifica o dígito
+004A   0086           00118         MOVWF   PORTB           ; ativa os segmentos do display
+004B   18A6           00119         BTFSC   AL_DIS          ; testa se o alarme está disparado
+004C   1786           00120         BSF     BUZZER          ; ativa o buzzer
+004D   1005           00121         BCF     DIS0            ; ativa display 0
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+004E   0103           00122         CLRW                    ; W=0
+004F   2040           00123         CALL    ATRASO          ; espera
+0050   1405           00124         BSF     DIS0            ; desativa display 0
+0051   0829           00125         MOVF    D1,W            ;
+0052   2027           00126         CALL    DECOD_DISPLAY   ; decodifica o dígito
+0053   0086           00127         MOVWF   PORTB           ; ativa os segmentos do display
+0054   18A6           00128         BTFSC   AL_DIS          ; testa se o alarme está disparado
+0055   1786           00129         BSF     BUZZER          ; ativa o buzzer
+0056   1085           00130         BCF     DIS1            ; ativa display 0
+0057   0103           00131         CLRW                    ; W=0
+0058   2040           00132         CALL    ATRASO          ; espera
+0059   1485           00133         BSF     DIS1            ; desativa display 0
+005A   0820           00134         MOVF    HORA,W          ; copia o dígito em W
+005B   20A8           00135         CALL    BIN8DEC         ;
+005C   0828           00136         MOVF    D0,W            ;
+005D   2027           00137         CALL    DECOD_DISPLAY   ; decodifica o dígito
+005E   0086           00138         MOVWF   PORTB           ; ativa os segmentos do display
+005F   18A6           00139         BTFSC   AL_DIS          ; testa se o alarme está disparado
+0060   1786           00140         BSF     BUZZER          ; ativa o buzzer
+0061   1105           00141         BCF     DIS2            ; ativa display 0
+0062   0103           00142         CLRW                    ; W=0
+0063   2040           00143         CALL    ATRASO          ; espera
+0064   1505           00144         BSF     DIS2            ; desativa display 0
+0065   0829           00145         MOVF    D1,W            ;
+0066   2027           00146         CALL    DECOD_DISPLAY   ; decodifica o dígito
+0067   0086           00147         MOVWF   PORTB           ; ativa os segmentos do display
+0068   18A6           00148         BTFSC   AL_DIS          ; testa se o alarme está disparado
+0069   1786           00149         BSF     BUZZER          ; ativa o buzzer
+006A   1185           00150         BCF     DIS3            ; ativa display 0
+006B   0103           00151         CLRW                    ; W=0
+006C   2040           00152         CALL    ATRASO          ; espera
+006D   1585           00153         BSF     DIS3            ; desativa display 0
+006E   2897           00154         GOTO    MOSTRA_LEDS     ;
+006F                  00155 MOSTRA_ALARME:
+006F   0823           00156         MOVF    M_AL,W          ; copia o dígito em W
+0070   20A8           00157         CALL    BIN8DEC         ;
+0071   0828           00158         MOVF    D0,W            ;
+0072   2027           00159         CALL    DECOD_DISPLAY   ; decodifica o dígito
+0073   0086           00160         MOVWF   PORTB           ; ativa os segmentos do display
+0074   18A6           00161         BTFSC   AL_DIS          ; testa se o alarme está disparado
+0075   1786           00162         BSF     BUZZER          ; ativa o buzzer
+0076   1005           00163         BCF     DIS0            ; ativa display 0
+0077   0103           00164         CLRW                    ; W=0
+0078   2040           00165         CALL    ATRASO          ; espera
+0079   1405           00166         BSF     DIS0            ; desativa display 0
+007A   0829           00167         MOVF    D1,W            ;
+007B   2027           00168         CALL    DECOD_DISPLAY   ; decodifica o dígito
+007C   0086           00169         MOVWF   PORTB           ; ativa os segmentos do display
+007D   18A6           00170         BTFSC   AL_DIS          ; testa se o alarme está disparado
+007E   1786           00171         BSF     BUZZER          ; ativa o buzzer
+007F   1085           00172         BCF     DIS1            ; ativa display 0
+0080   0103           00173         CLRW                    ; W=0
+0081   2040           00174         CALL    ATRASO          ; espera
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0082   1485           00175         BSF     DIS1            ; desativa display 0
+0083   0822           00176         MOVF    H_AL,W          ; copia o dígito em W
+0084   20A8           00177         CALL    BIN8DEC         ;
+0085   0828           00178         MOVF    D0,W            ;
+0086   2027           00179         CALL    DECOD_DISPLAY   ; decodifica o dígito
+0087   0086           00180         MOVWF   PORTB           ; ativa os segmentos do display
+0088   18A6           00181         BTFSC   AL_DIS          ; testa se o alarme está disparado
+0089   1786           00182         BSF     BUZZER          ; ativa o buzzer
+008A   1105           00183         BCF     DIS2            ; ativa display 0
+008B   0103           00184         CLRW                    ; W=0
+008C   2040           00185         CALL    ATRASO          ; espera
+008D   1505           00186         BSF     DIS2            ; desativa display 0
+008E   0829           00187         MOVF    D1,W            ;
+008F   2027           00188         CALL    DECOD_DISPLAY   ; decodifica o dígito
+0090   0086           00189         MOVWF   PORTB           ; ativa os segmentos do display
+0091   18A6           00190         BTFSC   AL_DIS          ; testa se o alarme está disparado
+0092   1786           00191         BSF     BUZZER          ; ativa o buzzer
+0093   1185           00192         BCF     DIS3            ; ativa display 0
+0094   0103           00193         CLRW                    ; W=0
+0095   2040           00194         CALL    ATRASO          ; espera
+0096   1585           00195         BSF     DIS3            ; desativa display 0
+0097                  00196 MOSTRA_LEDS:
+0097   0103           00197         CLRW                    ; apaga o W
+0098   1826           00198         BTFSC   AL_ON           ; AL_ON=1 ?
+                      00199         BSW     LED_AL          ; sim -> ativa led LED_AL
+                          M         IF (4==0)
+                          M                 IORLW   B'00000001'
+                          M         ENDIF
+                          M         IF (4==1)
+                          M                 IORLW   B'00000010'
+                          M         ENDIF
+                          M         IF (4==2)
+                          M                 IORLW   B'00000100'
+                          M         ENDIF
+                          M         IF (4==3)
+                          M                 IORLW   B'00001000'
+                          M         ENDIF
+                          M         IF (4==4)
+0099   3810               M                 IORLW   B'00010000'
+                          M         ENDIF
+                          M         IF (4==5)
+                          M                 IORLW   B'00100000'
+                          M         ENDIF
+                          M         IF (4==6)
+                          M                 IORLW   B'01000000'
+                          M         ENDIF
+                          M         IF (4==7)
+                          M                 IORLW   B'10000000'
+                          M         ENDIF
+009A   1D26           00200         BTFSS   MODO            ; modo relógio ?
+                      00201         BSW     LED_MH          ; sim -> acende led de modo hora
+                          M         IF (2==0)
+                          M                 IORLW   B'00000001'
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                          M         ENDIF
+                          M         IF (2==1)
+                          M                 IORLW   B'00000010'
+                          M         ENDIF
+                          M         IF (2==2)
+009B   3804               M                 IORLW   B'00000100'
+                          M         ENDIF
+                          M         IF (2==3)
+                          M                 IORLW   B'00001000'
+                          M         ENDIF
+                          M         IF (2==4)
+                          M                 IORLW   B'00010000'
+                          M         ENDIF
+                          M         IF (2==5)
+                          M                 IORLW   B'00100000'
+                          M         ENDIF
+                          M         IF (2==6)
+                          M                 IORLW   B'01000000'
+                          M         ENDIF
+                          M         IF (2==7)
+                          M                 IORLW   B'10000000'
+                          M         ENDIF
+009C   1926           00202         BTFSC   MODO            ; modo alarme ?
+                      00203         BSW     LED_MA          ; sim -> acende led de modo alarme
+                          M         IF (3==0)
+                          M                 IORLW   B'00000001'
+                          M         ENDIF
+                          M         IF (3==1)
+                          M                 IORLW   B'00000010'
+                          M         ENDIF
+                          M         IF (3==2)
+                          M                 IORLW   B'00000100'
+                          M         ENDIF
+                          M         IF (3==3)
+009D   3808               M                 IORLW   B'00001000'
+                          M         ENDIF
+                          M         IF (3==4)
+                          M                 IORLW   B'00010000'
+                          M         ENDIF
+                          M         IF (3==5)
+                          M                 IORLW   B'00100000'
+                          M         ENDIF
+                          M         IF (3==6)
+                          M                 IORLW   B'01000000'
+                          M         ENDIF
+                          M         IF (3==7)
+                          M                 IORLW   B'10000000'
+                          M         ENDIF
+009E   19A6           00204         BTFSC   PONTO           ; pontos ativados ?
+009F   3803           00205         IORLW   B'00000011'     ; sim > acende os leds separadores
+00A0   18A6           00206         BTFSC   AL_DIS          ; testa se o alarme está disparado
+                      00207         BSW     7               ; ativa o buzzer
+                          M         IF (7==0)
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                          M                 IORLW   B'00000001'
+                          M         ENDIF
+                          M         IF (7==1)
+                          M                 IORLW   B'00000010'
+                          M         ENDIF
+                          M         IF (7==2)
+                          M                 IORLW   B'00000100'
+                          M         ENDIF
+                          M         IF (7==3)
+                          M                 IORLW   B'00001000'
+                          M         ENDIF
+                          M         IF (7==4)
+                          M                 IORLW   B'00010000'
+                          M         ENDIF
+                          M         IF (7==5)
+                          M                 IORLW   B'00100000'
+                          M         ENDIF
+                          M         IF (7==6)
+                          M                 IORLW   B'01000000'
+                          M         ENDIF
+                          M         IF (7==7)
+00A1   3880               M                 IORLW   B'10000000'
+                          M         ENDIF
+00A2   0086           00208         MOVWF   PORTB           ; copia o valor final de W para o PORTB
+00A3   1205           00209         BCF     LEDS            ;
+00A4   0103           00210         CLRW                    ;
+00A5   2040           00211         CALL    ATRASO          ;
+00A6   1605           00212         BSF     LEDS            ;
+00A7   0008           00213         RETURN                  ; retorna
+                      00214 
+00A8                  00215 BIN8DEC:
+00A8   00A8           00216         MOVWF   D0              ; copia o número a ser convertido para a variável de unidades
+00A9   01A9           00217         CLRF    D1              ; limpa as dezenas
+00AA                  00218 BIN8DEC_2:
+00AA   300A           00219         MOVLW   D'10'           ; subtrai 10 decimal ...
+00AB   0228           00220         SUBWF   D0,W            ; ... do valor a ser convertido e guarda o resultado em W
+00AC   1C03           00221         BTFSS   STATUS,C        ; o resultado é positivo ou zero ?
+00AD   0008           00222         RETURN                  ; não ? então retorna, a conversão terminou
+00AE   00A8           00223         MOVWF   D0              ; sim ? então copia o resultado em W para as unidades ...
+00AF   0AA9           00224         INCF    D1,F            ; incrementa um nas dezenas 
+00B0   28AA           00225         GOTO    BIN8DEC_2       ; e reinicia o ciclo
+00B1                  00226 TECLAS:
+00B1   1683 1303      00227         BANKSEL TRISB           ;
+00B3   300F           00228         MOVLW   B'00001111'     ;
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00B4   0086           00229         MOVWF   TRISB           ; configura RB0 a RB3 como entradas
+00B5   1283 1303      00230         BANKSEL T1CON           ;
+00B7   1C06           00231         BTFSS   S1              ; testa se é a tecla S1
+00B8   28C8           00232         GOTO    TECLAS_S1       ; vai para tratamento da tecla S1
+00B9   1C86           00233         BTFSS   S2              ; testa se é a tecla S2
+00BA   28DF           00234         GOTO    TECLAS_S2       ; vai para tratamento da tecla S2
+00BB   1D06           00235         BTFSS   S3              ; testa se é a tecla S3
+00BC   28F6           00236         GOTO    TECLAS_S3       ; vai para tratamento da tecla S3
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00BD   1D86           00237         BTFSS   S4              ; testa se é a tecla S4
+00BE   2903           00238         GOTO    TECLAS_S4       ; vai para tratamento da tecla S4
+00BF   01AD           00239         CLRF    TECLA           ; apaga a tecla (nenhuma foi pressionada)
+00C0                  00240 TECLAS_FIM:
+00C0   301E           00241         MOVLW   D'30'           ; 
+00C1   00AE           00242         MOVWF   TECLA_C         ; reinicializa o temporizador das teclas
+00C2                  00243 TECLAS_FIM2:
+00C2   1683 1303      00244         BANKSEL TRISB           ;
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00C4   0186           00245         CLRF    TRISB           ; configura porta B para saída
+00C5   1283 1303      00246         BANKSEL T1CON           ;
+00C7   0008           00247         RETURN                  ; retorna
+00C8                  00248 TECLAS_S1:
+00C8   3001           00249         MOVLW   1               ; compara ...
+00C9   06AD           00250         XORWF   TECLA,F         ; a tecla pressionada com tecla anterior ...
+00CA   00AD           00251         MOVWF   TECLA           ; tecla atual é a 1
+00CB   1D03           00252         BTFSS   STATUS,Z        ; se a tecla atual é diferente da ...
+00CC   28C0           00253         GOTO    TECLAS_FIM      ; ... anterior, vai para o final
+00CD   08AE           00254         MOVF    TECLA_C,F       ; testa se o temporizador das teclas ...
+00CE   1903           00255         BTFSC   STATUS,Z        ; ... está em zero ...
+00CF   28C2           00256         GOTO    TECLAS_FIM2     ; se estiver, vai para o final
+00D0   0BAE           00257         DECFSZ  TECLA_C,F       ; decrementa o temporizador das teclas
+00D1   28C2           00258         GOTO    TECLAS_FIM2     ; se maior que zero vai para o final
+00D2   1D26           00259         BTFSS   MODO            ; se o MODO=0
+00D3   0AA0           00260         INCF    HORA,F          ; incrementa a hora atual
+00D4   1926           00261         BTFSC   MODO            ; se o MODO=1
+00D5   0AA2           00262         INCF    H_AL,F          ; incrementa a hora do alarme
+00D6   3018           00263         MOVLW   D'24'           ; verifica ...
+00D7   0620           00264         XORWF   HORA,W          ; se a hora é igual a 24
+00D8   1903           00265         BTFSC   STATUS,Z        ; se for ...
+00D9   01A0           00266         CLRF    HORA            ; zera a hora
+00DA   3018           00267         MOVLW   D'24'           ; verifica ...
+00DB   0622           00268         XORWF   H_AL,W          ; se a hora do alarme é igual a 24
+00DC   1903           00269         BTFSC   STATUS,Z        ; se for ...
+00DD   01A2           00270         CLRF    H_AL            ; zera a hora do alarme
+00DE   28C2           00271         GOTO    TECLAS_FIM2     ; vai para o final
+00DF                  00272 TECLAS_S2:
+00DF   3002           00273         MOVLW   2               ; compara ...
+00E0   06AD           00274         XORWF   TECLA,F         ; a tecla pressionada com tecla anterior ...
+00E1   00AD           00275         MOVWF   TECLA           ; tecla atual é a 2
+00E2   1D03           00276         BTFSS   STATUS,Z        ; se a tecla atual é diferente da ...
+00E3   28C0           00277         GOTO    TECLAS_FIM      ; ... anterior, vai para o final
+00E4   08AE           00278         MOVF    TECLA_C,F       ; testa se o temporizador das teclas ...
+00E5   1903           00279         BTFSC   STATUS,Z        ; ... está em zero ...
+00E6   28C2           00280         GOTO    TECLAS_FIM2     ; se estiver, vai para o final
+00E7   0BAE           00281         DECFSZ  TECLA_C,F       ; decrementa o temporizador das teclas
+00E8   28C2           00282         GOTO    TECLAS_FIM2     ; se maior que zero vai para o final
+00E9   1D26           00283         BTFSS   MODO            ; se o MODO=0
+00EA   0AA1           00284         INCF    MINUTO,F        ; incrementa o minuto atual
+00EB   1926           00285         BTFSC   MODO            ; se o MODO=1
+00EC   0AA3           00286         INCF    M_AL,F          ; incrementa o minuto do alarme
+00ED   303C           00287         MOVLW   D'60'           ; verifica ...
+00EE   0621           00288         XORWF   MINUTO,W        ; se os minutos são iguais a 60
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE 13
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00EF   1903           00289         BTFSC   STATUS,Z        ; se forem ...
+00F0   01A0           00290         CLRF    HORA            ; zera os minutos
+00F1   303C           00291         MOVLW   D'60'           ; verifica ...
+00F2   0623           00292         XORWF   M_AL,W          ; se os minutos do alarme são iguais a 60
+00F3   1903           00293         BTFSC   STATUS,Z        ; se forem ...
+00F4   01A2           00294         CLRF    H_AL            ; zera os minutos do alarme
+00F5   28C2           00295         GOTO    TECLAS_FIM2     ; vai para o final
+00F6                  00296 TECLAS_S3:
+00F6   3003           00297         MOVLW   3               ; compara ...
+00F7   06AD           00298         XORWF   TECLA,F         ; a tecla pressionada com tecla anterior ...
+00F8   00AD           00299         MOVWF   TECLA           ; tecla atual é a 3
+00F9   1D03           00300         BTFSS   STATUS,Z        ; se a tecla atual é diferente da ...
+00FA   28C0           00301         GOTO    TECLAS_FIM      ; ... anterior, vai para o final
+00FB   08AE           00302         MOVF    TECLA_C,F       ; testa se o temporizador das teclas ...
+00FC   1903           00303         BTFSC   STATUS,Z        ; ... está em zero ...
+00FD   28C2           00304         GOTO    TECLAS_FIM2     ; se estiver, vai para o final
+00FE   0BAE           00305         DECFSZ  TECLA_C,F       ; decrementa o temporizador das teclas
+00FF   28C2           00306         GOTO    TECLAS_FIM2     ; se maior que zero vai para o final
+                      00307         COMBF   MODO            ; muda o modo
+                          M         IF (2==0)
+                          M                 MOVLW   B'00000001'
+                          M         ENDIF
+                          M         IF (2==1)
+                          M                 MOVLW   B'00000010'
+                          M         ENDIF
+                          M         IF (2==2)
+0100   3004               M                 MOVLW   B'00000100'
+                          M         ENDIF
+                          M         IF (2==3)
+                          M                 MOVLW   B'00001000'
+                          M         ENDIF
+                          M         IF (2==4)
+                          M                 MOVLW   B'00010000'
+                          M         ENDIF
+                          M         IF (2==5)
+                          M                 MOVLW   B'00100000'
+                          M         ENDIF
+                          M         IF (2==6)
+                          M                 MOVLW   B'01000000'
+                          M         ENDIF
+                          M         IF (2==7)
+                          M                 MOVLW   B'10000000'
+                          M         ENDIF
+0101   06A6               M         XORWF   FLAGS,F
+0102   28C2           00308         GOTO    TECLAS_FIM2     ; vai para o final
+0103                  00309 TECLAS_S4:
+0103   3004           00310         MOVLW   4               ; compara ...
+0104   06AD           00311         XORWF   TECLA,F         ; a tecla pressionada com tecla anterior ...
+0105   00AD           00312         MOVWF   TECLA           ; tecla atual é a 4
+0106   1D03           00313         BTFSS   STATUS,Z        ; se a tecla atual é diferente da ...
+0107   28C0           00314         GOTO    TECLAS_FIM      ; ... anterior, vai para o final
+0108   08AE           00315         MOVF    TECLA_C,F       ; testa se o temporizador das teclas ...
+0109   1903           00316         BTFSC   STATUS,Z        ; ... está em zero ...
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE 14
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+010A   28C2           00317         GOTO    TECLAS_FIM2     ; se estiver, vai para o final
+010B   0BAE           00318         DECFSZ  TECLA_C,F       ; decrementa o temporizador das teclas
+010C   28C2           00319         GOTO    TECLAS_FIM2     ; se maior que zero vai para o final
+010D   18A6           00320         BTFSC   AL_DIS          ; o alarme está disparado ?
+010E   2912           00321         GOTO    DESLIGA_ALARME  ; sim -> vai para DESLIGA_ALARME
+                      00322         COMBF   AL_ON           ; inverte o estado do alarme
+                          M         IF (0==0)
+010F   3001               M                 MOVLW   B'00000001'
+                          M         ENDIF
+                          M         IF (0==1)
+                          M                 MOVLW   B'00000010'
+                          M         ENDIF
+                          M         IF (0==2)
+                          M                 MOVLW   B'00000100'
+                          M         ENDIF
+                          M         IF (0==3)
+                          M                 MOVLW   B'00001000'
+                          M         ENDIF
+                          M         IF (0==4)
+                          M                 MOVLW   B'00010000'
+                          M         ENDIF
+                          M         IF (0==5)
+                          M                 MOVLW   B'00100000'
+                          M         ENDIF
+                          M         IF (0==6)
+                          M                 MOVLW   B'01000000'
+                          M         ENDIF
+                          M         IF (0==7)
+                          M                 MOVLW   B'10000000'
+                          M         ENDIF
+0110   06A6               M         XORWF   FLAGS,F
+0111   28C2           00323         GOTO    TECLAS_FIM2     ; vai para o final      
+0112                  00324 DESLIGA_ALARME:
+0112   1386           00325         BCF     BUZZER          ; desliga buzzer
+0113   28C2           00326         GOTO    TECLAS_FIM2     ; vai para o final
+0114                  00327 VERIFICA_ALARME:
+0114   1C26           00328         BTFSS   AL_ON           ; verifica se o alarme está ligado
+0115   0008           00329         RETURN                  ; não ? Então retorna
+0116   0820           00330         MOVF    HORA,W          ; testa se a hora ...
+0117   0622           00331         XORWF   H_AL,W          ; é igual a do alarme ...
+0118   1D03           00332         BTFSS   STATUS,Z        ;
+0119   0008           00333         RETURN                  ; não ? Então retorna
+011A   0821           00334         MOVF    MINUTO,W        ; testa se os minutos ...
+011B   0623           00335         XORWF   M_AL,W          ; são iguais aos do alarme ...
+011C   1D03           00336         BTFSS   STATUS,Z        ;
+011D   0008           00337         RETURN                  ; não ? Então retorna
+                      00338 ; se o programa chegou até aqui, então o horário do alarme é igual ao
+                      00339 ; horário atual. O alarme então irá disparar
+011E   14A6           00340         BSF     AL_DIS          ; ativa o flag do alarme
+011F   1786           00341         BSF     BUZZER          ; ativa o buzzer
+0120   0008           00342         RETURN                  ; retorna
+0121                  00343 INICIO:
+0121   3007           00344         MOVLW   B'00000111'
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE 15
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0122   009F           00345         MOVWF   CMCON           ; configura os comparadores analógicos para modo 7
+0123   1683 1303      00346         BANKSEL TRISA           ;
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0125   0185           00347         CLRF    TRISA           ; porta A como saída
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0126   0186           00348         CLRF    TRISB           ; porta B como saída
+0127   3001           00349         MOVLW   B'00000001'     ;
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0128   008C           00350         MOVWF   PIE1            ; habilita interrupção do timer 1
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0129   0181           00351         CLRF    OPTION_REG      ; ativa resistores de PULL-UP
+012A   1283 1303      00352         BANKSEL T1CON           ;
+012C   3030           00353         MOVLW   B'00110000'     ;
+012D   0090           00354         MOVWF   T1CON           ; configura o timer 1 para clock interno e prescaler 1:8
+012E   30DC           00355         MOVLW   0xDC            ;
+012F   008E           00356         MOVWF   TMR1L           ;
+0130   300B           00357         MOVLW   0x0B            ;
+0131   008F           00358         MOVWF   TMR1H           ; inicializa o timer 1 em 3036 decimal
+0132   01A7           00359         CLRF    SEG             ; apaga variáveis
+0133   01A1           00360         CLRF    MINUTO          ; ...
+0134   01A0           00361         CLRF    HORA            ; ...
+0135   01A2           00362         CLRF    H_AL            ; ...
+0136   01A3           00363         CLRF    M_AL            ; ...
+0137   01A6           00364         CLRF    FLAGS           ; ...
+0138   1410           00365         BSF     T1CON,TMR1ON    ; ativa a contagem do timer 1
+0139   30C0           00366         MOVLW   B'11000000'     ;
+013A   008B           00367         MOVWF   INTCON          ; habilita GIE e PEIE
+                      00368 
+013B                  00369 LOOP_PRINCIPAL:
+013B   2044           00370         CALL    DISPLAY         ; mostra display
+013C   20B1           00371         CALL    TECLAS          ; verifica teclas
+013D   2114           00372         CALL    VERIFICA_ALARME ; verifica o horário
+013E   18A6           00373         BTFSC   AL_DIS          ;
+013F   1786           00374         BSF     BUZZER          ; ativa o alarme
+0140   293B           00375         GOTO    LOOP_PRINCIPAL  ; retorna para o LOOP_PRINCIPAL
+Warning[205]: Found directive in column 1. (END)
+                      00376 END
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE 16
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ADEN                              00000003
+AL_DIS                            FLAGS,1
+AL_ON                             FLAGS,0
+ATRASO                            00000040
+BCW                               
+BIN8DEC                           000000A8
+BIN8DEC_2                         000000AA
+BRGH                              00000002
+BSW                               
+BUZZER                            PORTB,7
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1H                            00000016
+CCPR1L                            00000015
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+COMBF                             
+COMW                              
+CREN                              00000004
+CSRC                              00000007
+D0                                00000028
+D1                                00000029
+DC                                00000001
+DECOD_DISPLAY                     00000027
+DECW                              
+DESLIGA_ALARME                    00000112
+DIS0                              PORTA,0
+DIS1                              PORTA,1
+DIS2                              PORTA,2
+DIS3                              PORTA,3
+DISPLAY                           00000044
+DIV2                              
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE 17
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+EEIE                              00000007
+EEIF                              00000007
+F                                 00000001
+FERR                              00000002
+FIM_INT                           00000022
+FLAGS                             00000026
+FSR                               00000004
+GIE                               00000007
+HORA                              00000020
+H_AL                              00000022
+INCW                              
+INDF                              00000000
+INICIO                            00000121
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+JPE                               
+JPG                               
+JPGS                              
+JPL                               
+JPLS                              
+JPNE                              
+JPWNZ                             
+JPWZ                              
+LEDS                              PORTA,4
+LED_AL                            4
+LED_MA                            3
+LED_MH                            2
+LOOP_PRINCIPAL                    0000013B
+MINUTO                            00000021
+MODO                              FLAGS,2
+MOSTRA_ALARME                     0000006F
+MOSTRA_LEDS                       00000097
+MULT2                             
+M_AL                              00000023
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+OERR                              00000001
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE 18
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+PIR1                              0000000C
+PONTO                             FLAGS,3
+PONTO1                            0
+PONTO2                            1
+PORTA                             00000005
+PORTB                             00000006
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RESTAURA_CONTEXTO                 
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+RX9D                              00000000
+S1                                PORTB,0
+S2                                PORTB,1
+S3                                PORTB,2
+S4                                PORTB,3
+SALVA_CONTEXTO                    
+SEG                               00000027
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+STATUS                            00000003
+STATUS_TEMP                       0000002B
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1OSCEN                           00000003
+T1_CONTA                          0000002C
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TABELA                            00000030
+TECLA                             0000002D
+TECLAS                            000000B1
+TECLAS_FIM                        000000C0
+TECLAS_FIM2                       000000C2
+TECLAS_S1                         000000C8
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE 19
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TECLAS_S2                         000000DF
+TECLAS_S3                         000000F6
+TECLAS_S4                         00000103
+TECLA_C                           0000002E
+TEMP                              00000024
+TEMP1                             00000025
+TMR0                              00000001
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISB                             00000086
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+VERIFICA_ALARME                   00000114
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+VROE                              00000006
+VRR                               00000005
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+W_TEMP                            0000002A
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_CP_50                            00002BFF
+_CP_75                            000017FF
+_CP_ALL                           000003FF
+_CP_OFF                           00003FFF
+_DATA_CP_OFF                      00003FFF
+MPASM 03.00 Released          RELOGIO.ASM   6-25-2002  13:43:12         PAGE 20
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_DATA_CP_ON                       00003EFF
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_HS_OSC                           00003FEE
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FED
+__16F627                          00000001
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : X---XXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0040 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0080 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+00C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0100 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0140 : X--------------- ---------------- ---------------- ----------------
+2000 : -------X-------- ---------------- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Words Used:   318
+Program Memory Words Free:   706
+
+
+Errors   :     0
+Warnings :     7 reported,     0 suppressed
+Messages :     6 reported,     0 suppressed
+
+

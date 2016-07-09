@@ -1,0 +1,990 @@
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ; Freqüencímetro Digital e Contador de Eventos
+                      00002 ; O timer 0 é utilizado para fornecer a base de tempo de 1 segundo
+                      00003 ; O timer 1 é utilizado para fazer a contagem primária dos pulsos de entrada
+Warning[205]: Found directive in column 1. (LIST)
+                      00004 LIST  P=16F627
+Warning[205]: Found directive in column 1. (INCLUDE)
+                      00005 INCLUDE <P16F627.INC>
+                      00001         LIST
+                      00002 ; P16F627.INC  Standard Header File, Version 1.01    Microchip Technology, Inc.
+                      00261         LIST
+Warning[205]: Found directive in column 1. (INCLUDE)
+                      00006 INCLUDE <MACROS.ASM>
+                      00001 ; Este arquivo de macros pode ser incluído livremente em qualquer programa.
+                      00002 ; Para isto basta utilizar a diretiva INCLUDE <MACROS.ASM>
+                      00003 INCW    MACRO
+                      00004         ADDLW  0x01
+                      00005         ENDM
+                      00006 DECW    MACRO
+                      00007         ADDLW  0XFF
+                      00008         ENDM
+                      00009 COMW    MACRO
+                      00010         XORWF   0xFF
+                      00011         ENDM
+                      00012 BSW     MACRO   BIT
+                      00013         IF (BIT==0)
+                      00014                 IORLW   B'00000001'
+                      00015         ENDIF
+                      00016         IF (BIT==1)
+                      00017                 IORLW   B'00000010'
+                      00018         ENDIF
+                      00019         IF (BIT==2)
+                      00020                 IORLW   B'00000100'
+                      00021         ENDIF
+                      00022         IF (BIT==3)
+                      00023                 IORLW   B'00001000'
+                      00024         ENDIF
+                      00025         IF (BIT==4)
+                      00026                 IORLW   B'00010000'
+                      00027         ENDIF
+                      00028         IF (BIT==5)
+                      00029                 IORLW   B'00100000'
+                      00030         ENDIF
+                      00031         IF (BIT==6)
+                      00032                 IORLW   B'01000000'
+                      00033         ENDIF
+                      00034         IF (BIT==7)
+                      00035                 IORLW   B'10000000'
+                      00036         ENDIF
+                      00037         ENDM
+                      00038 BCW     MACRO   BIT
+                      00039         IF (BIT==0)
+                      00040                 ANDLW   B'11111110'
+                      00041         ENDIF
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00042         IF (BIT==1)
+                      00043                 ANDLW   B'11111101'
+                      00044         ENDIF
+                      00045         IF (BIT==2)
+                      00046                 ANDLW   B'11111011'
+                      00047         ENDIF
+                      00048         IF (BIT==3)
+                      00049                 ANDLW   B'11110111'
+                      00050         ENDIF
+                      00051         IF (BIT==4)
+                      00052                 ANDLW   B'11101111'
+                      00053         ENDIF
+                      00054         IF (BIT==5)
+                      00055                 ANDLW   B'11011111'
+                      00056         ENDIF
+                      00057         IF (BIT==6)
+                      00058                 ANDLW   B'10111111'
+                      00059         ENDIF
+                      00060         IF (BIT==7)
+                      00061                 ANDLW   B'01111111'
+                      00062         ENDIF
+                      00063         ENDM
+                      00064 JPE     MACRO   ENDER,REG,VAL
+                      00065         MOVLW   VAL
+                      00066         SUBWF   REG,W
+                      00067         BTFSC   STATUS,Z
+                      00068         GOTO    ENDER
+                      00069         ENDM
+                      00070 JPNE    MACRO   ENDER,REG,VAL
+                      00071         MOVLW   VAL
+                      00072         SUBWF   REG,W
+                      00073         BTFSS   STATUS,Z
+                      00074         GOTO    ENDER
+                      00075         ENDM
+                      00076 JPL     MACRO   ENDER,REG,VAL
+                      00077         MOVLW   VAL
+                      00078         SUBWF   REG,W
+                      00079         BTFSS   STATUS,C
+                      00080         GOTO    ENDER
+                      00081         ENDM
+                      00082 JPLS    MACRO   ENDER,REG,VAL
+                      00083         MOVLW   VAL
+                      00084         SUBWF   REG,W
+                      00085         BTFSS   STATUS,C
+                      00086         GOTO    ENDER
+                      00087         BTFSC   STATUS,Z
+                      00088         GOTO    ENDER
+                      00089         ENDM
+                      00090 JPG     MACRO   ENDER,REG,VAL
+                      00091         MOVLW   VAL
+                      00092         SUBWF   REG,W
+                      00093         BTFSS   STATUS,C
+                      00094         GOTO    JPG_FIM
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00095         BTFSS   STATUS,Z
+                      00096         GOTO    ENDER
+                      00097 JPG_FIM:
+                      00098         ENDM
+                      00099 JPGS    MACRO   ENDER,REG,VAL
+                      00100         MOVLW   VAL
+                      00101         SUBWF   REG,W
+                      00102         BTFSC   STATUS,C
+                      00103         GOTO    ENDER
+                      00104         ENDM
+                      00105 JPWZ    MACRO   ENDER
+                      00106         ANDLW   0XFF
+                      00107         BTFSC   STATUS,Z
+                      00108         GOTO    ENDER
+                      00109         ENDM
+                      00110 JPWNZ   MACRO   ENDER
+                      00111         ANDLW   0XFF
+                      00112         BTFSS   STATUS,Z
+                      00113         GOTO    ENDER
+                      00114         ENDM
+                      00115 COMBF   MACRO   REG,BIT
+                      00116         IF (BIT==0)
+                      00117                 MOVLW   B'00000001'
+                      00118         ENDIF
+                      00119         IF (BIT==1)
+                      00120                 MOVLW   B'00000010'
+                      00121         ENDIF
+                      00122         IF (BIT==2)
+                      00123                 MOVLW   B'00000100'
+                      00124         ENDIF
+                      00125         IF (BIT==3)
+                      00126                 MOVLW   B'00001000'
+                      00127         ENDIF
+                      00128         IF (BIT==4)
+                      00129                 MOVLW   B'00010000'
+                      00130         ENDIF
+                      00131         IF (BIT==5)
+                      00132                 MOVLW   B'00100000'
+                      00133         ENDIF
+                      00134         IF (BIT==6)
+                      00135                 MOVLW   B'01000000'
+                      00136         ENDIF
+                      00137         IF (BIT==7)
+                      00138                 MOVLW   B'10000000'
+                      00139         ENDIF
+                      00140         XORWF   REG,F
+                      00141         ENDM
+                      00142 ; MACRO para Multiplicação com RLF. Incluída no arquivo MACROS.ASM
+                      00143 ; Utilização: MULT2 <registrador>,<valor múltiplo de potência de 2>
+                      00144 MULT2   MACRO   REG,VAL
+                      00145         BCF     STATUS,C                ; limpa o flag de carry
+                      00146         IF (VAL==2)
+                      00147                 RLF     REG,F           ; rotaciona o registrador à esquerda
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00148                                         ; o que equivale a multiplicar por 2
+                      00149         ENDIF
+                      00150         IF (VAL==4)
+                      00151                 RLF     REG,F           ; multiplica por 2
+                      00152                 BCF     STATUS,C        ; zera carry para não atrapalhar a pró
+                      00153                                         ; xima multiplicação
+                      00154                 RLF     REG,F           ; multiplica novamente por 2 (total 4)
+                      00155         ENDIF
+                      00156         IF (VAL==8)
+                      00157                 RLF     REG,F           ; multiplica por 2
+                      00158                 BCF     STATUS,C        ; zera carry
+                      00159                 RLF     REG,F           ; multiplica novamente por 2 (total 4)
+                      00160                 BCF     STATUS,C        ; zera carry
+                      00161                 RLF     REG,F           ; multiplica novamente por 2 (total 8)
+                      00162         ENDIF
+                      00163         IF (VAL==16)
+                      00164                 RLF     REG,F           ; multiplica por 2
+                      00165                 BCF     STATUS,C        ; zera carry
+                      00166                 RLF     REG,F           ; multiplica novamente por 2 (total 4)
+                      00167                 BCF     STATUS,C        ; zera carry
+                      00168                 RLF     REG,F           ; multiplica novamente por 2 (total 8)
+                      00169                 BCF     STATUS,C        ; zera carry
+                      00170                 RLF     REG,F           ; multiplica novamente por 2 (total 16)
+                      00171         ENDIF
+                      00172         IF (VAL==32)
+                      00173                 RLF     REG,F           ; multiplica por 2
+                      00174                 BCF     STATUS,C        ; zera carry
+                      00175                 RLF     REG,F           ; multiplica novamente por 2 (total 4)
+                      00176                 BCF     STATUS,C        ; zera carry
+                      00177                 RLF     REG,F           ; multiplica novamente por 2 (total 8)
+                      00178                 BCF     STATUS,C        ; zera carry
+                      00179                 RLF     REG,F           ; multiplica novamente por 2 (total 16)                 
+                      00180                 BCF     STATUS,C        ; zera carry
+                      00181                 RLF     REG,F           ; multiplica novamente por 2 (total 32)
+                      00182         ENDIF
+                      00183         ENDM
+                      00184 ; MACRO para Divisão com RRF. Esta macro está incluída no arquivo MACROS.ASM
+                      00185 ; Utilização: DIV2 <registrador>,<valor múltiplo de potência de 2>
+                      00186 DIV2    MACRO   REG,VAL
+                      00187         BCF     STATUS,C                ; limpa o flag de carry
+                      00188         IF (VAL==2)
+                      00189                 RRF     REG,F           ; rotaciona o registrador à esquerda
+                      00190                                         ; o que equivale a divider por 2
+                      00191         ENDIF
+                      00192         IF (VAL==4)
+                      00193                 RRF     REG,F           ; divide por 2
+                      00194                 BCF     STATUS,C        ; zera carry para não atrapalhar a pró
+                      00195                                         ; xima divisão
+                      00196                 RRF     REG,F           ; divide novamente por 2 (total 4)
+                      00197         ENDIF
+                      00198         IF (VAL==8)
+                      00199                 RRF     REG,F           ; divide por 2
+                      00200                 BCF     STATUS,C        ; zera carry
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE  5
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00201                 RRF     REG,F           ; divide novamente por 2 (total 4)
+                      00202                 BCF     STATUS,C        ; zera carry
+                      00203                 RRF     REG,F           ; divide novamente por 2 (total 8)
+                      00204         ENDIF
+                      00205         IF (VAL==16)
+                      00206                 RRF     REG,F           ; divide por 2
+                      00207                 BCF     STATUS,C        ; zera carry
+                      00208                 RRF     REG,F           ; divide novamente por 2 (total 4)
+                      00209                 BCF     STATUS,C        ; zera carry
+                      00210                 RRF     REG,F           ; divide novamente por 2 (total 8)
+                      00211                 BCF     STATUS,C        ; zera carry
+                      00212                 RRF     REG,F           ; divide novamente por 2 (total 16)
+                      00213         ENDIF
+                      00214         IF (VAL==32)
+                      00215                 RRF     REG,F           ; divide por 2
+                      00216                 BCF     STATUS,C        ; zera carry
+                      00217                 RRF     REG,F           ; divide novamente por 2 (total 4)
+                      00218                 BCF     STATUS,C        ; zera carry
+                      00219                 RRF     REG,F           ; divide novamente por 2 (total 8)
+                      00220                 BCF     STATUS,C        ; zera carry
+                      00221                 RRF     REG,F           ; divide novamente por 2 (total 16)
+                      00222                 BCF     STATUS,C        ; zera carry
+                      00223                 RRF     REG,F           ; divide novamente por 2 (total 32)
+                      00224         ENDIF
+                      00225         ENDM
+                      00226 SALVA_CONTEXTO  MACRO
+                      00227         MOVWF   W_TEMP  ; salva o conteúdo do W em W_TEMP
+                      00228         SWAPF   STATUS,W        ; salva o conteúdo do STATUS ...
+                      00229         MOVWF   STATUS_TEMP     ; ... em STATUS_TEMP
+                      00230         ENDM
+                      00231 RESTAURA_CONTEXTO  MACRO
+                      00232         SWAPF   STATUS_TEMP,W   ; restaura o conteúdo do ...
+                      00233         MOVWF   STATUS  ; ... registrador STATUS
+                      00234         SWAPF   W_TEMP,F        ; restaura o conteúdo ...
+                      00235         SWAPF   W_TEMP,W        ; ... do registrador W
+                      00236         ENDM
+                      00237 
+                      00238 
+Warning[205]: Found directive in column 1. (__CONFIG)
+2007   3F18           00007 __CONFIG _CP_OFF & _WDT_OFF & _PWRTE_OFF & _BODEN_OFF & _MCLRE_OFF & _INTRC_OSC_NOCLKOUT & _LVP_OFF
+                      00008 ;
+                      00009 ; *******************************************************************************
+                      00010 ; Definição das variáveis
+                      00011 ;
+  00000020            00012 FLAGS           EQU 0x20        ; armazenamento de flags (MODO e ATUALIZA)
+  00000021            00013 FT4             EQU 0x21        ; freqüência temporária 4
+  00000022            00014 FT5             EQU 0x22        ; freqüência temporária 5
+  00000023            00015 FT6             EQU 0x23        ; freqüência temporária 6
+  00000024            00016 A0              EQU 0x24        ; freqüência temporária LSB do timer 1
+  00000025            00017 A1              EQU 0x25        ; freqüência temporária MSB do timer 1
+  00000026            00018 F4              EQU 0x26        ; freqüência 4
+  00000027            00019 F5              EQU 0x27        ; freqüência 5
+  00000028            00020 F6              EQU 0x28        ; freqüência 6
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE  6
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+  00000029            00021 DISP0           EQU 0x29        ; dígito 0 do display
+  0000002A            00022 DISP1           EQU 0x2A        ; dígito 1 do display
+  0000002B            00023 DISP2           EQU 0x2B        ; dígito 2 do display
+  0000002C            00024 DISP3           EQU 0x2C        ; dígito 3 do display
+  0000002D            00025 DISP4           EQU 0x2D        ; dígito 4 do display
+  0000002E            00026 DISP5           EQU 0x2E        ; dígito 5 do display
+  0000002F            00027 DISP6           EQU 0x2F        ; dígito 6 do display
+  00000030            00028 TEMP            EQU 0x30        ; variável temporária
+  00000031            00029 W_TEMP          EQU 0x31        ; W temporário
+  00000032            00030 STATUS_TEMP     EQU 0x32        ; STATUS temporário
+  00000033            00031 TEMP0           EQU 0x33        ; variável temporária
+  00000034            00032 TEMP1           EQU 0x34        ; variável temporária
+  00000035            00033 B0              EQU 0x35        ; variável temporária utilizada na subtração
+  00000036            00034 B1              EQU 0x36        ; variável temporária utilizada na subtração
+  00000037            00035 T0_CONTA        EQU 0x37        ; contador de interrupções do timer 0
+                      00036 ;******************************************************
+                      00037 ; símbolos
+                      00038 ;******************************************************
+                      00039 #DEFINE D0 PORTB,7              ; catodo do display D0
+                      00040 #DEFINE D1 PORTA,7              ; catodo do display D1
+                      00041 #DEFINE D2 PORTA,6              ; catodo do display D2
+                      00042 #DEFINE D3 PORTA,3              ; catodo do display D3
+                      00043 #DEFINE D4 PORTA,2              ; catodo do display D4
+                      00044 #DEFINE D5 PORTA,1              ; catodo do display D5
+                      00045 #DEFINE D6 PORTA,0              ; catodo do display D6
+                      00046 #DEFINE ATUALIZA FLAGS,0        ; flag de atualização
+                      00047 #DEFINE MODO FLAGS,1            ; flag de modo
+  00000012            00048 T0_VAL  EQU D'18'               ; valor inicial da variável de contagem do timer 0
+  00000028            00049 T0_INI  EQU D'40'               ; valor inicial do timer 0
+Warning[205]: Found directive in column 1. (ORG)
+0000                  00050 ORG 0x0000
+0000   28EB           00051         GOTO    INICIO
+Warning[205]: Found directive in column 1. (ORG)
+0004                  00052 ORG 0x0004
+                      00053         SALVA_CONTEXTO          ; macro para salvar o conteúdo de W e STATUS
+0004   00B1               M         MOVWF   W_TEMP  ; salva o conteúdo do W em W_TEMP
+0005   0E03               M         SWAPF   STATUS,W        ; salva o conteúdo do STATUS ...
+0006   00B2               M         MOVWF   STATUS_TEMP     ; ... em STATUS_TEMP
+0007   190B           00054         BTFSC   INTCON,T0IF     ; testa a interrupção do timer 0
+0008   282E           00055         GOTO    TRATA_TIMER0    ; se T0IF=1, desvia para TRATA_TIMER0
+0009   180C           00056         BTFSC   PIR1,TMR1IF     ; testa a interrupção do timer 1
+000A   2811           00057         GOTO    TRATA_TIMER1    ; se TMR1IF=1, desvia para TRATA_TIMER1
+000B                  00058 FIM_INT:
+                      00059         RESTAURA_CONTEXTO       ; macro para restaurar os valores de W e STATUS
+000B   0E32               M         SWAPF   STATUS_TEMP,W   ; restaura o conteúdo do ...
+000C   0083               M         MOVWF   STATUS  ; ... registrador STATUS
+000D   0EB1               M         SWAPF   W_TEMP,F        ; restaura o conteúdo ...
+000E   0E31               M         SWAPF   W_TEMP,W        ; ... do registrador W
+000F   1410           00060         BSF     T1CON,TMR1ON    ; liga o timer 1
+0010   0009           00061         RETFIE                  ; retorna da interrupção
+0011                  00062 TRATA_TIMER1:
+0011   100C           00063         BCF     PIR1,TMR1IF     ; limpa o flag de interrupção do timer 1
+0012   1010           00064         BCF     T1CON,TMR1ON    ; desliga o timer 1
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE  7
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0013   30D8           00065         MOVLW   0xD8            ; inicializa o timer 1 ...
+0014   008F           00066         MOVWF   TMR1H           ; ... 
+0015   30F0           00067         MOVLW   0xF0            ; ...
+0016   008E           00068         MOVWF   TMR1L           ; com o valor 0xD8F0 (ou 55536 decimal)
+0017   0AA1           00069         INCF    FT4,F           ; incrementa FT4
+0018   300A           00070         MOVLW   D'10'           ; verifica se FT4 ...
+0019   0621           00071         XORWF   FT4,W           ; ... é igual ...
+001A   1D03           00072         BTFSS   STATUS,Z        ; ... a 10 ...
+001B   280B           00073         GOTO    FIM_INT         ; se não é, vai para o final da interrupção
+001C   01A1           00074         CLRF    FT4             ; se é, apaga o FT4 ...
+001D   0AA2           00075         INCF    FT5,F           ; ... e incrementa o FT5
+001E   300A           00076         MOVLW   D'10'           ; verifica se FT5 ...
+001F   0622           00077         XORWF   FT5,W           ; ... é igual ...
+0020   1D03           00078         BTFSS   STATUS,Z        ; ... a 10 ...
+0021   280B           00079         GOTO    FIM_INT         ; se não é, vai para o final da interrupção
+0022   01A2           00080         CLRF    FT5             ; se é, apaga o FT5 ...
+0023   0AA3           00081         INCF    FT6,F           ; ... e incrementa o FT6
+0024   300A           00082         MOVLW   D'10'           ; verifica se FT6 ...
+0025   0623           00083         XORWF   FT6,W           ; ... é igual ...
+0026   1D03           00084         BTFSS   STATUS,Z        ; ... a 10 ...
+0027   280B           00085         GOTO    FIM_INT         ; se não é, vai para o final da interrupção
+0028   018E           00086         CLRF    TMR1L           ; se é, apaga o timer 1 ...
+0029   018F           00087         CLRF    TMR1H           ; ...
+002A   01A1           00088         CLRF    FT4             ; FT4 ...
+002B   01A2           00089         CLRF    FT5             ; FT5 ...
+002C   01A3           00090         CLRF    FT6             ; FT6 ...
+002D   280B           00091         GOTO    FIM_INT         ; vai para o final da interrupção
+002E                  00092 TRATA_TIMER0:
+002E   110B           00093         BCF     INTCON,T0IF     ; apaga o flag da interrupção do timer 0
+002F   3028           00094         MOVLW   T0_INI          ;
+0030   0081           00095         MOVWF   TMR0            ; reinicia o timer 0 para 39 decimal
+Message[305]: Using default destination of 1 (file).
+0031   03B7           00096         DECF    T0_CONTA        ; decrementa a variável de contagem do timer 0
+0032   1D03           00097         BTFSS   STATUS,Z        ; verifica se T0_CONTA=0
+0033   280B           00098         GOTO    FIM_INT         ; se não é, vai para o fim da interrupção
+0034   3012           00099         MOVLW   T0_VAL          ; 
+0035   00B7           00100         MOVWF   T0_CONTA        ; se é, reinicial a variável em 18
+0036   080E           00101         MOVF    TMR1L,W         ; copia o valor LSB do timer 1 para ...
+0037   00A4           00102         MOVWF   A0              ; ... o A0
+0038   080F           00103         MOVF    TMR1H,W         ; copia o valor MSB do timer 1 para ...
+0039   00A5           00104         MOVWF   A1              ; ... o A1
+003A   0821           00105         MOVF    FT4,W           ; copia o valor de FT4 ...
+003B   00A6           00106         MOVWF   F4              ; para F4
+003C   0822           00107         MOVF    FT5,W           ; copia o valor de FT5 ...
+003D   00A7           00108         MOVWF   F5              ; para F5
+003E   0823           00109         MOVF    FT6,W           ; copia o valor de FT6 ...
+003F   00A8           00110         MOVWF   F6              ; para F6
+0040   1420           00111         BSF     ATUALIZA        ; ativa flag de atualização dos valores
+0041   18A0           00112         BTFSC   MODO            ; testa qual o modo de funcionamento
+0042   280B           00113         GOTO    FIM_INT         ; se modo=1 (contador) então retorna
+                      00114                                 ; se modo=0, (frequencímetro)
+0043   30D8           00115         MOVLW   0xD8            ; inicializa o timer 1 ...
+0044   008F           00116         MOVWF   TMR1H           ; ... 
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE  8
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0045   30F0           00117         MOVLW   0xF0            ; ...
+0046   008E           00118         MOVWF   TMR1L           ; com o valor 0xD8F0 (ou 55536 decimal)
+0047   01A1           00119         CLRF    FT4             ; apaga contadores
+0048   01A2           00120         CLRF    FT5             ; ...
+0049   01A3           00121         CLRF    FT6             ; ...
+004A   280B           00122         GOTO    FIM_INT         ; vai para o final da interrupção
+004B                  00123 DECOD_DISPLAY:
+004B   00B0           00124         MOVWF   TEMP            ; armazena o número na variável deslocamento
+004C   3054           00125         MOVLW   LOW TABELA      ; copia em W os 8 bits LSB do endereço da TABELA
+004D   07B0           00126         ADDWF   TEMP,F          ; adiciona o valor à variável DESLOCAMENTO
+004E   3000           00127         MOVLW   HIGH TABELA     ; copia em W os 5 bits superiores do endereço da TABELA
+004F   1803           00128         BTFSC   STATUS,C        ; testa para ver se a soma anterior transbordou 
+0050   3E01           00129         ADDLW   0x01            ; se transbordou, soma 1 ao W
+0051   008A           00130         MOVWF   PCLATH          ; acerta o PCLATH de acordo com o endereço da TABELA
+0052   0830           00131         MOVF    TEMP,W          ; copia o valor do DESLOCAMENTO para o W
+0053   0082           00132         MOVWF   PCL             ; copia o W para o PCL (desvia para a tabela)
+0054                  00133 TABELA:
+                      00134 ; a tabela seguinte foi modificada devido ao uso do pino RB6 como uma entrada
+0054   343F           00135         RETLW   B'00111111'     ; número 0
+0055   3406           00136         RETLW   B'00000110'     ; número 1
+0056   349B           00137         RETLW   B'10011011'     ; número 2
+0057   348F           00138         RETLW   B'10001111'     ; número 3
+0058   34A6           00139         RETLW   B'10100110'     ; número 4
+0059   34AD           00140         RETLW   B'10101101'     ; número 5
+005A   34BD           00141         RETLW   B'10111101'     ; número 6
+005B   3407           00142         RETLW   B'00000111'     ; número 7
+005C   34BF           00143         RETLW   B'10111111'     ; número 8
+005D   34A7           00144         RETLW   B'10100111'     ; número 9
+005E   34B7           00145         RETLW   B'10110111'     ; dígito A      
+005F   34BC           00146         RETLW   B'10111100'     ; dígito B
+0060   3439           00147         RETLW   B'00111001'     ; dígito C
+0061   349E           00148         RETLW   B'10011110'     ; dígito D
+0062   34B9           00149         RETLW   B'10111001'     ; dígito E
+0063   34B1           00150         RETLW   B'10110001'     ; dígito F
+0064                  00151 ATRASO:                         ; Sub-rotina de atraso
+0064   3E01           00152         ADDLW   1               ; soma 1 ao W
+0065   1903           00153         BTFSC   STATUS,Z        ; testa se W=0 ...
+0066   0008           00154         RETURN                  ; se W=0, retorna
+0067   2864           00155         GOTO    ATRASO          ; se W diferente de 0, desvia para ATRASO_LOOP
+0068                  00156 DISPLAY:
+                      00157 ; apresenta o primeiro dígito no display D0
+0068   0829           00158         MOVF    DISP0,W         ; copia o dígito em W
+0069   204B           00159         CALL    DECOD_DISPLAY   ; decodifica o dígito
+006A   0086           00160         MOVWF   PORTB           ; ativa os segmentos do display
+006B   1386           00161         BCF     D0              ; ativa display D0
+006C   0103           00162         CLRW                    ; W=0
+006D   2064           00163         CALL    ATRASO          ; espera
+006E   1786           00164         BSF     D0              ; desativa display D0
+                      00165 ; apresenta o segundo dígito no display D1
+006F   082A           00166         MOVF    DISP1,W         ; copia o próximo dígito em W
+0070   204B           00167         CALL    DECOD_DISPLAY   ; decodifica o display
+0071   0086           00168         MOVWF   PORTB           ; ativa os segmentos
+0072   1385           00169         BCF     D1              ; ativa display D1
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE  9
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0073   0103           00170         CLRW                    ; W=0
+0074   2064           00171         CALL    ATRASO          ; espera
+0075   1785           00172         BSF     D1              ; desativa display D1
+                      00173 ; apresenta o terceiro dígito no display D2
+0076   082B           00174         MOVF    DISP2,W         ; copia o último dígito em W
+0077   204B           00175         CALL    DECOD_DISPLAY   ; decodifica display
+0078   0086           00176         MOVWF   PORTB           ; ativa os segmentos
+0079   1305           00177         BCF     D2              ; ativa o display D2
+007A   0103           00178         CLRW                    ; W=0
+007B   2064           00179         CALL    ATRASO          ; espera
+007C   1705           00180         BSF     D2              ; desativa o display D2
+                      00181 ; apresenta o quarto dígito no display D3
+007D   082C           00182         MOVF    DISP3,W         ; copia o último dígito em W
+007E   204B           00183         CALL    DECOD_DISPLAY   ; decodifica display
+007F   0086           00184         MOVWF   PORTB           ; ativa os segmentos
+0080   1185           00185         BCF     D3              ; ativa o display D3
+0081   0103           00186         CLRW                    ; W=0
+0082   2064           00187         CALL    ATRASO          ; espera
+0083   1585           00188         BSF     D3              ; desativa o display D3
+                      00189 ; apresenta o quinto dígito no display D4
+0084   082D           00190         MOVF    DISP4,W         ; copia o último dígito em W
+0085   204B           00191         CALL    DECOD_DISPLAY   ; decodifica display
+0086   0086           00192         MOVWF   PORTB           ; ativa os segmentos
+0087   1105           00193         BCF     D4              ; ativa o display D4
+0088   0103           00194         CLRW                    ; W=0
+0089   2064           00195         CALL    ATRASO          ; espera
+008A   1505           00196         BSF     D4              ; desativa o display D4
+                      00197 ; apresenta o sexto dígito no display D5
+008B   082E           00198         MOVF    DISP5,W         ; copia o último dígito em W
+008C   204B           00199         CALL    DECOD_DISPLAY   ; decodifica display
+008D   0086           00200         MOVWF   PORTB           ; ativa os segmentos
+008E   1085           00201         BCF     D5              ; ativa o display D5
+008F   0103           00202         CLRW                    ; W=0
+0090   2064           00203         CALL    ATRASO          ; espera
+0091   1485           00204         BSF     D5              ; desativa o display D5
+                      00205 ; apresenta o sétimo dígito no display D6
+0092   082F           00206         MOVF    DISP6,W         ; copia o último dígito em W
+0093   204B           00207         CALL    DECOD_DISPLAY   ; decodifica display
+0094   0086           00208         MOVWF   PORTB           ; ativa os segmentos
+0095   1005           00209         BCF     D6              ; ativa o display D6
+0096   0103           00210         CLRW                    ; W=0
+0097   2064           00211         CALL    ATRASO          ; espera
+0098   1405           00212         BSF     D6              ; desativa o display D6
+0099   0008           00213         RETURN                  ; retorna
+                      00214 ; Sub-rotina de atualização dos valores a serem apresentados no
+                      00215 ; display.
+009A                  00216 ATUALIZACAO:
+009A   1020           00217         BCF     ATUALIZA        ; apaga flag de solicitação de
+                      00218                                 ; atualização de valores
+009B   0828           00219         MOVF    F6,W            ; copia a contagem de F6
+009C   00AF           00220         MOVWF   DISP6           ; para o DISP6
+009D   0827           00221         MOVF    F5,W            ; copia a contagem de F5
+009E   00AE           00222         MOVWF   DISP5           ; para o DISP5
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE 10
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+009F   0826           00223         MOVF    F4,W            ; copia a contagem de F4
+00A0   00AD           00224         MOVWF   DISP4           ; para o DISP4
+                      00225 ; primeiramente, devemos subtrair 55536 do valor em A0 e A1:
+00A1   30D8           00226         MOVLW   0xD8            ;
+00A2   00B6           00227         MOVWF   B1              ;
+00A3   30F0           00228         MOVLW   0xF0            ;
+00A4   00B5           00229         MOVWF   B0              ;
+00A5   20DA           00230         CALL    SUB16B          ;
+                      00231 ; a rotina a seguir converte o valor armazenado em A0 e A1 para decimal
+                      00232 ; e armazena os dígitos decimais em DISP0 a DISP3
+00A6   01A9           00233         CLRF    DISP0           ; apaga as unidades
+00A7   01AA           00234         CLRF    DISP1           ; apaga as dezenas
+00A8   01AB           00235         CLRF    DISP2           ; apaga as centenas
+00A9   01AC           00236         CLRF    DISP3           ; apaga as milhares
+00AA                  00237 BIN16DEC_3:
+00AA   0824           00238         MOVF    A0,W            ; copia o LSB binário ...
+00AB   00B3           00239         MOVWF   TEMP0           ; ... para TEMP0
+00AC   0825           00240         MOVF    A1,W            ; copia o MSB binário ...
+00AD   00B4           00241         MOVWF   TEMP1           ; ... para TEMP1
+00AE   30E8           00242         MOVLW   0xE8            ;
+00AF   00B5           00243         MOVWF   B0              ;
+00B0   3003           00244         MOVLW   0x03            ;
+00B1   00B6           00245         MOVWF   B1              ; B=03E8 (1000 decimal)
+00B2   20DA           00246         CALL    SUB16B          ; subtrai 1000 decimal do valor binário
+00B3   1C03           00247         BTFSS   STATUS,C                ; testa se o resultado é positivo ou zero
+00B4   28B7           00248         GOTO    BIN16DEC_4      ; não ? então vai para a próxima fase
+00B5   0AAC           00249         INCF    DISP3,F         ; sim ? então incrementa as milhares 
+00B6   28AA           00250         GOTO    BIN16DEC_3      ; reinicia o ciclo
+00B7                  00251 BIN16DEC_4:
+00B7   0833           00252         MOVF    TEMP0,W         ; retorna o valor anterior ...
+00B8   00A4           00253         MOVWF   A0              ; ... de A0
+00B9   0834           00254         MOVF    TEMP1,W         ; retorna o valor anterior ...
+00BA   00A5           00255         MOVWF   A1              ; ... de A1
+00BB                  00256 BIN16DEC_5:
+00BB   0824           00257         MOVF    A0,W            ; copia o LSB binário ...
+00BC   00B3           00258         MOVWF   TEMP0           ; ... para TEMP0
+00BD   0825           00259         MOVF    A1,W            ; copia o MSB binário ...
+00BE   00B4           00260         MOVWF   TEMP1           ; ... para TEMP1
+00BF   3064           00261         MOVLW   D'100'          ;
+00C0   00B5           00262         MOVWF   B0              ;
+00C1   01B6           00263         CLRF    B1              ; B=100 decimal
+00C2   20DA           00264         CALL    SUB16B          ; subtrai 100 decimal do valor binário (A)
+00C3   1C03           00265         BTFSS   STATUS,C                ; testa se o resultado é positivo ou zero
+00C4   28C7           00266         GOTO    BIN16DEC_6      ; não ? então vai para a próxima fase
+00C5   0AAB           00267         INCF    DISP2,F         ; sim ? então incrementa as centenas
+00C6   28BB           00268         GOTO    BIN16DEC_5      ; reinicia o ciclo
+00C7                  00269 BIN16DEC_6:
+00C7   0833           00270         MOVF    TEMP0,W         ; retorna o valor anterior ...
+00C8   00A4           00271         MOVWF   A0              ; ... de A0
+00C9   0834           00272         MOVF    TEMP1,W         ; retorna o valor anterior ...
+00CA   00A5           00273         MOVWF   A1              ; ... de A1
+00CB                  00274 BIN16DEC_7:
+00CB   0824           00275         MOVF    A0,W            ; copia o LSB binário ...
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE 11
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00CC   00B3           00276         MOVWF   TEMP0           ; ... para TEMP0
+00CD   0825           00277         MOVF    A1,W            ; copia o MSB binário ...
+00CE   00B4           00278         MOVWF   TEMP1           ; ... para TEMP1
+00CF   300A           00279         MOVLW   D'10'           ;
+00D0   00B5           00280         MOVWF   B0              ;
+00D1   01B6           00281         CLRF    B1              ; B=10 decimal
+00D2   20DA           00282         CALL    SUB16B          ; subtrai 10 decimal do valor binário (A)
+00D3   1C03           00283         BTFSS   STATUS,C                ; testa se o resultado é positivo ou zero
+00D4   28D7           00284         GOTO    BIN16DEC_8      ; não ? então vai para fase final
+00D5   0AAA           00285         INCF    DISP1,F         ; sim ? então incrementa as dezenas
+00D6   28CB           00286         GOTO    BIN16DEC_7      ; reinicia o ciclo
+00D7                  00287 BIN16DEC_8:
+00D7   0833           00288         MOVF    TEMP0,W         ; copia o valor temporário restante ...
+00D8   00A9           00289         MOVWF   DISP0           ; ... para as unidades
+00D9   0008           00290         RETURN                  ; retorna
+00DA                  00291 SUB16B:
+00DA   0835           00292         MOVF    B0,W
+00DB   02A4           00293         SUBWF   A0,F
+00DC   3001           00294         MOVLW   0x01
+00DD   1C03           00295         BTFSS   STATUS,C
+00DE   02A5           00296         SUBWF   A1,F
+00DF   1C03           00297         BTFSS   STATUS,C
+00E0   28E7           00298         GOTO    EMPRESTA
+00E1   0836           00299         MOVF    B1,W
+00E2   02A5           00300         SUBWF   A1,F
+00E3                  00301 FIM_SUB16B:
+00E3   08A4           00302         MOVF    A0,F
+00E4   1903           00303         BTFSC   STATUS,Z
+00E5   08A5           00304         MOVF    A1,F
+00E6   0008           00305         RETURN
+00E7                  00306 EMPRESTA:
+00E7   0836           00307         MOVF    B1,W
+00E8   02A5           00308         SUBWF   A1,F
+00E9   1003           00309         BCF     STATUS,C
+00EA   28E3           00310         GOTO    FIM_SUB16B
+                      00311 ;******************************************************************************
+                      00312 ; Aqui se inicia o programa. Primeiramente as variáveis e dispositivos internos
+                      00313 ; são inicializados ...
+00EB                  00314 INICIO:
+00EB   3007           00315         MOVLW   B'00000111'
+00EC   009F           00316         MOVWF   CMCON           ; configura os comparadores analógicos para modo 7
+00ED   1683 1303      00317         BANKSEL TRISA           ;
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00EF   0185           00318         CLRF    TRISA           ; configura a porta A como saída
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00F0   0186           00319         CLRF    TRISB           ; configura a porta B como saída
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00F1   1685           00320         BSF     TRISA,5         ; RA5 é entrada
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+00F2   1706           00321         BSF     TRISB,6         ; RB6 é entrada
+00F3   1283 1303      00322         BANKSEL PORTB           ;
+00F5   30FF           00323         MOVLW   B'11111111'     ; desliga os catodos dos ...
+00F6   0085           00324         MOVWF   PORTA           ; ... displays
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE 12
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+00F7   01A9           00325         CLRF    DISP0           ; apaga as variáveis
+00F8   01AA           00326         CLRF    DISP1           ; ...
+00F9   01AB           00327         CLRF    DISP2           ; ...
+00FA   01AC           00328         CLRF    DISP3           ; ...
+00FB   01AD           00329         CLRF    DISP4           ; ...
+00FC   01AE           00330         CLRF    DISP5           ; ...
+00FD   01AF           00331         CLRF    DISP6           ; ...
+00FE   01A1           00332         CLRF    FT4             ; ...
+00FF   01A2           00333         CLRF    FT5             ; ...
+0100   01A3           00334         CLRF    FT6             ; ...
+0101   1020           00335         BCF     ATUALIZA        ; apaga o flag de notificação de atualização
+0102   10A0           00336         BCF     MODO            ; seleciona o modo 0 (frequencímetro)
+0103   3012           00337         MOVLW   T0_VAL          ;
+0104   00B7           00338         MOVWF   T0_CONTA        ;
+                      00339 ; a temporização de 1 segundo é conseguida utilizando-se o timer 0: ele é 
+                      00340 ; programado para utilizar o prescaler com divisão 1:256, além disso, o timer 0
+                      00341 ; é inicializado com o valor 39 decimal, o que faz com ele realize apenas
+                      00342 ; 217 contagens por ciclo. Desta forma teremos um total de 4Mhz/4/256/217=18,0011
+                      00343 ; interrupções por segundo. A rotina de tratamento do timer 0 deve então pro-
+                      00344 ; videnciar a contagem até 18, antes de efetuar a totalização dos valores.
+0105   3003           00345         MOVLW   B'00000011'     ; configura o timer 1 para clock externo, presca-
+0106   0090           00346         MOVWF   T1CON           ; ler 1:1 e modo síncrono
+0107   1683 1303      00347         BANKSEL OPTION_REG      ;
+0109   3087           00348         MOVLW   B'10000111'     ; configura o timer 0 para clock interno com
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+010A   0081           00349         MOVWF   OPTION_REG      ; prescaler dividindo por 256
+010B   3001           00350         MOVLW   B'00000001'     ;
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+010C   008C           00351         MOVWF   PIE1            ;
+010D   1283 1303      00352         BANKSEL INTCON          ;
+010F   30E0           00353         MOVLW   B'11100000'     ;
+0110   008B           00354         MOVWF   INTCON          ;
+0111   30D8           00355         MOVLW   0xD8            ; inicializa o timer 1 ...
+0112   008F           00356         MOVWF   TMR1H           ; ... 
+0113   30F0           00357         MOVLW   0xF0            ; ...
+0114   008E           00358         MOVWF   TMR1L           ; com o valor 0xD8F0 (ou 55536 decimal)
+0115   3028           00359         MOVLW   T0_INI          ;
+0116   0081           00360         MOVWF   TMR0            ;
+                      00361 ; no loop principal o programa permanecerá apresentando os valores no display
+0117                  00362 LOOP_PRINCIPAL:
+0117   1820           00363         BTFSC   ATUALIZA        ; verifica se o valor deve ser atualizado
+0118   209A           00364         CALL    ATUALIZACAO     ; sim ? então atualiza os valores
+0119   2068           00365         CALL    DISPLAY         ; mostra display
+                      00366 ; Agora verifica qual a posição da chave de seleção de modo, e seleciona o modo
+                      00367 ; de acordo.
+                      00368 ; Se RA5=1 modo contador, neste caso o flag MODO é setado
+                      00369 ; Se RA5=0 modo freqüencímetro, neste caso o flag MODO é apagado
+011A   10A0           00370         BCF     MODO            ; apaga MODO
+011B   1A85           00371         BTFSC   PORTA,5         ;
+011C   14A0           00372         BSF     MODO            ; se RA5=1, seta MODO
+011D   2917           00373         GOTO    LOOP_PRINCIPAL  ; retorna para o LOOP_PRINCIPAL
+Warning[205]: Found directive in column 1. (END)
+                      00374 END
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE 13
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+A0                                00000024
+A1                                00000025
+ADEN                              00000003
+ATRASO                            00000064
+ATUALIZA                          FLAGS,0
+ATUALIZACAO                       0000009A
+B0                                00000035
+B1                                00000036
+BCW                               
+BIN16DEC_3                        000000AA
+BIN16DEC_4                        000000B7
+BIN16DEC_5                        000000BB
+BIN16DEC_6                        000000C7
+BIN16DEC_7                        000000CB
+BIN16DEC_8                        000000D7
+BRGH                              00000002
+BSW                               
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1H                            00000016
+CCPR1L                            00000015
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+COMBF                             
+COMW                              
+CREN                              00000004
+CSRC                              00000007
+D0                                PORTB,7
+D1                                PORTA,7
+D2                                PORTA,6
+D3                                PORTA,3
+D4                                PORTA,2
+D5                                PORTA,1
+D6                                PORTA,0
+DC                                00000001
+DECOD_DISPLAY                     0000004B
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE 14
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+DECW                              
+DISP0                             00000029
+DISP1                             0000002A
+DISP2                             0000002B
+DISP3                             0000002C
+DISP4                             0000002D
+DISP5                             0000002E
+DISP6                             0000002F
+DISPLAY                           00000068
+DIV2                              
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+EEIE                              00000007
+EEIF                              00000007
+EMPRESTA                          000000E7
+F                                 00000001
+F4                                00000026
+F5                                00000027
+F6                                00000028
+FERR                              00000002
+FIM_INT                           0000000B
+FIM_SUB16B                        000000E3
+FLAGS                             00000020
+FSR                               00000004
+FT4                               00000021
+FT5                               00000022
+FT6                               00000023
+GIE                               00000007
+INCW                              
+INDF                              00000000
+INICIO                            000000EB
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+JPE                               
+JPG                               
+JPGS                              
+JPL                               
+JPLS                              
+JPNE                              
+JPWNZ                             
+JPWZ                              
+LOOP_PRINCIPAL                    00000117
+MODO                              FLAGS,1
+MULT2                             
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_PD                            00000003
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE 15
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+OERR                              00000001
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIR1                              0000000C
+PORTA                             00000005
+PORTB                             00000006
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RESTAURA_CONTEXTO                 
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+RX9D                              00000000
+SALVA_CONTEXTO                    
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+STATUS                            00000003
+STATUS_TEMP                       00000032
+SUB16B                            000000DA
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T0_CONTA                          00000037
+T0_INI                            00000028
+T0_VAL                            00000012
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1OSCEN                           00000003
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE 16
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+T2CON                             00000012
+TABELA                            00000054
+TEMP                              00000030
+TEMP0                             00000033
+TEMP1                             00000034
+TMR0                              00000001
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRATA_TIMER0                      0000002E
+TRATA_TIMER1                      00000011
+TRISA                             00000085
+TRISB                             00000086
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+VROE                              00000006
+VRR                               00000005
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+W_TEMP                            00000031
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_CP_50                            00002BFF
+_CP_75                            000017FF
+_CP_ALL                           000003FF
+_CP_OFF                           00003FFF
+_DATA_CP_OFF                      00003FFF
+MPASM 03.20 Released             FREQ.ASM   1-6-2003  16:33:19         PAGE 17
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_DATA_CP_ON                       00003EFF
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_HS_OSC                           00003FEE
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FED
+__16F627                          00000001
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : X---XXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0040 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0080 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+00C0 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0100 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXX-- ---------------- ----------------
+2000 : -------X-------- ---------------- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Words Used:   283
+Program Memory Words Free:   741
+
+
+Errors   :     0
+Warnings :     7 reported,     0 suppressed
+Messages :     7 reported,     0 suppressed
+
+

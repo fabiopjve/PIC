@@ -1,0 +1,30 @@
+; Multiplica dois números de 16 bits (A1:A0 e B1:B0) e armazena o resultado 
+; em C3:C2:C1:C0, sendo C0 o LSB.
+; É necessário definir as variáveis A0,A1,B0,B1,C0,C1,C2 E C3.
+
+MULTIPLICA16X16:
+	CLRF	C3
+	CLRF	C2
+	CLRF	C1
+	CLRF	C0
+	BSF	C1, 7
+MULTL1:
+	RRF	A1,F
+	RRF	A0,F
+	BTFSS	STATUS,C
+	GOTO	MULTL2
+	MOVF	B0,W
+	ADDWF	C2,F
+	MOVF	B1,W
+	BTFSC	STATUS,C
+	INCFSZ	B1,W
+	ADDWF	C3,F
+MULTL2:
+	RRF	C3,F
+	RRF	C2,F
+	RRF	C1,F
+	RRF	C0,F
+	BTFSS	STATUS,C
+	GOTO	MULTL1
+	RETURN
+

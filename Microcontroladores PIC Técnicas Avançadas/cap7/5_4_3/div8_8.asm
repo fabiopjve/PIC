@@ -1,0 +1,29 @@
+; DIV8_8 - Divisão inteira 8/8 bits
+; Entrada
+; 	A0 - Dividendo, B0 - Divisor
+; Saída
+;	W - Quociente
+; As variáveis A0, B0, TEMP1, TEMP2 e TEMP3 devem ser definidas previamente
+DIV8_8:
+	MOVLW	0x08
+	MOVWF	TEMP1
+	CLRF	TEMP2 
+	MOVF	A0,W
+	MOVWF	TEMP3 
+DIV8_8_LOOP:
+	BCF	STATUS,C
+	BTFSC	TEMP3,7
+	BSF	STATUS,C
+	RLF	TEMP2,F
+	MOVF	B0,W
+	SUBWF	TEMP2,F
+	BTFSC	STATUS,C
+	GOTO	DIV8_8_PTA
+	ADDWF	TEMP2,F
+	BCF	STATUS,C
+DIV8_8_PTA:
+	RLF	TEMP3,F
+	DECFSZ	TEMP1,F
+	GOTO	DIV8_8_LOOP
+	MOVF	TEMP3,W
+	RETURN

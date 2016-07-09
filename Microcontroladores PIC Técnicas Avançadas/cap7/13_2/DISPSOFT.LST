@@ -1,0 +1,274 @@
+MPASM 03.20 Released         DISPSOFT.ASM   1-6-2003  15:43:23         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ; teste de display decodificado por software
+Warning[205]: Found directive in column 1. (LIST)
+                      00002 LIST  P=16F627
+Warning[205]: Found directive in column 1. (INCLUDE)
+                      00003 INCLUDE <P16F627.INC>
+                      00001         LIST
+                      00002 ; P16F627.INC  Standard Header File, Version 1.01    Microchip Technology, Inc.
+                      00261         LIST
+Warning[205]: Found directive in column 1. (__CONFIG)
+2007   3F18           00004 __CONFIG _CP_OFF & _WDT_OFF & _PWRTE_OFF & _BODEN_OFF & _MCLRE_OFF & _INTRC_OSC_NOCLKOUT & _LVP_OFF
+                      00005 
+  00000020            00006 DESLOCAMENTO    EQU 0x20
+Warning[205]: Found directive in column 1. (ORG)
+0000                  00007 ORG 0x0000
+                      00008 ; primeiramente vamos inicializar as portas como saídas 
+0000   3007           00009         MOVLW   B'00000111'
+0001   009F           00010         MOVWF   CMCON           ; configura os comparadores analógicos para modo 7
+0002   1683 1303      00011         BANKSEL TRISA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0004   0185           00012         CLRF    TRISA
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+0005   0186           00013         CLRF    TRISB
+0006   1283 1303      00014         BANKSEL PORTB
+                      00015 ; agora que as portas estão devidamente configuradas vamos ao display
+0008   3005           00016         MOVLW   D'5'            ; copia em W o número 5
+0009   200D           00017         CALL    DECOD_DISPLAY   ; chama a sub-rotina para decodificar o display
+000A   0086           00018         MOVWF   PORTB           ; o número 5 é enviado para o 4511
+000B   1606           00019         BSF     PORTB,4         ; ativa o display
+000C   0063           00020         SLEEP                   ; o programa termina aqui
+000D                  00021 DECOD_DISPLAY:
+000D   00A0           00022         MOVWF   DESLOCAMENTO    ; armazena o número na variável deslocamento
+000E   3016           00023         MOVLW   LOW TABELA      ; copia em W os 8 bits LSB do endereço da TABELA
+000F   07A0           00024         ADDWF   DESLOCAMENTO,F  ; adiciona o valor à variável DESLOCAMENTO
+0010   3000           00025         MOVLW   HIGH TABELA     ; copia em W os 5 bits superiores do endereço da TABELA
+0011   1803           00026         BTFSC   STATUS,C                ; testa para ver se a soma anterior transbordou 
+0012   3E01           00027         ADDLW   0x01            ; se transbordou, soma 1 ao W
+0013   008A           00028         MOVWF   PCLATH          ; acerta o PCLATH de acordo com o endereço da 
+                      00029                                 ; TABELA
+0014   0820           00030         MOVF    DESLOCAMENTO,W  ; copia o valor do DESLOCAMENTO para o W
+0015   0082           00031         MOVWF   PCL             ; copia o W para o PCL (desvia para a tabela)
+0016                  00032 TABELA:
+0016   343F           00033         RETLW   B'00111111'     ; número 0
+0017   3406           00034         RETLW   B'00000110'     ; número 1
+0018   345B           00035         RETLW   B'01011011'     ; número 2
+0019   344F           00036         RETLW   B'01001111'     ; número 3
+001A   3466           00037         RETLW   B'01100110'     ; número 4
+001B   346D           00038         RETLW   B'01101101'     ; número 5
+001C   347D           00039         RETLW   B'01111101'     ; número 6
+001D   3407           00040         RETLW   B'00000111'     ; número 7
+001E   347F           00041         RETLW   B'01111111'     ; número 8
+001F   3467           00042         RETLW   B'01100111'     ; número 9
+0020   3477           00043         RETLW   B'01110111'     ; dígito A      
+0021   347C           00044         RETLW   B'01111100'     ; dígito B
+MPASM 03.20 Released         DISPSOFT.ASM   1-6-2003  15:43:23         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0022   3439           00045         RETLW   B'00111001'     ; dígito C
+0023   345E           00046         RETLW   B'01011110'     ; dígito D
+0024   3479           00047         RETLW   B'01111001'     ; dígito E
+0025   3471           00048         RETLW   B'01110001'     ; dígito F
+Warning[205]: Found directive in column 1. (END)
+                      00049 END
+MPASM 03.20 Released         DISPSOFT.ASM   1-6-2003  15:43:23         PAGE  3
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+ADEN                              00000003
+BRGH                              00000002
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1H                            00000016
+CCPR1L                            00000015
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+CREN                              00000004
+CSRC                              00000007
+DC                                00000001
+DECOD_DISPLAY                     0000000D
+DESLOCAMENTO                      00000020
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+EEIE                              00000007
+EEIF                              00000007
+F                                 00000001
+FERR                              00000002
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+MPASM 03.20 Released         DISPSOFT.ASM   1-6-2003  15:43:23         PAGE  4
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+NOT_TO                            00000004
+OERR                              00000001
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIR1                              0000000C
+PORTA                             00000005
+PORTB                             00000006
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+RX9D                              00000000
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+STATUS                            00000003
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1OSCEN                           00000003
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TABELA                            00000016
+TMR0                              00000001
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+MPASM 03.20 Released         DISPSOFT.ASM   1-6-2003  15:43:23         PAGE  5
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISB                             00000086
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+VROE                              00000006
+VRR                               00000005
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_CP_50                            00002BFF
+_CP_75                            000017FF
+_CP_ALL                           000003FF
+_CP_OFF                           00003FFF
+_DATA_CP_OFF                      00003FFF
+_DATA_CP_ON                       00003EFF
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_HS_OSC                           00003FEE
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+MPASM 03.20 Released         DISPSOFT.ASM   1-6-2003  15:43:23         PAGE  6
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_XT_OSC                           00003FED
+__16F627                          00000001
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXX---------- ----------------
+2000 : -------X-------- ---------------- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Words Used:    38
+Program Memory Words Free:   986
+
+
+Errors   :     0
+Warnings :     5 reported,     0 suppressed
+Messages :     2 reported,     0 suppressed
+
+

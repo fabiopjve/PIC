@@ -1,0 +1,294 @@
+MPASM 03.20 Released          EXEMPLO.ASM   1-6-2003  16:24:14         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+Warning[205]: Found directive in column 1. (LIST)
+                      00001 LIST    P=16F627
+Warning[205]: Found directive in column 1. (INCLUDE)
+                      00002 INCLUDE <P16F627.INC>
+                      00001         LIST
+                      00002 ; P16F627.INC  Standard Header File, Version 1.01    Microchip Technology, Inc.
+                      00261         LIST
+Warning[205]: Found directive in column 1. (__CONFIG)
+2007   3F18           00003 __CONFIG _CP_OFF & _WDT_OFF & _PWRTE_OFF & _BODEN_OFF & _MCLRE_OFF & _INTRC_OSC_NOCLKOUT & _LVP_OFF
+  00000020            00004 A0      EQU 0x20
+  00000021            00005 B0      EQU 0x21
+  00000022            00006 B1      EQU 0x22
+Warning[205]: Found directive in column 1. (ORG)
+0000                  00007 ORG     0x0000
+0000   2826           00008         GOTO    INICIO
+                      00009 MULT8   MACRO   BIT
+                      00010         BTFSC   A0, BIT
+                      00011         ADDWF   B1,F
+                      00012         RRF     B1,F
+                      00013         RRF     B0,F
+                      00014         ENDM
+0001                  00015 MULTIPLICA8X8:
+0001   0821           00016         MOVF    B0, W
+0002   01A1           00017         CLRF    B0
+0003   01A2           00018         CLRF    B1
+0004   1003           00019         BCF     STATUS,C
+                      00020         MULT8   0
+0005   1820               M         BTFSC   A0, 0
+0006   07A2               M         ADDWF   B1,F
+0007   0CA2               M         RRF     B1,F
+0008   0CA1               M         RRF     B0,F
+                      00021         MULT8   1
+0009   18A0               M         BTFSC   A0, 1
+000A   07A2               M         ADDWF   B1,F
+000B   0CA2               M         RRF     B1,F
+000C   0CA1               M         RRF     B0,F
+                      00022         MULT8   2
+000D   1920               M         BTFSC   A0, 2
+000E   07A2               M         ADDWF   B1,F
+000F   0CA2               M         RRF     B1,F
+0010   0CA1               M         RRF     B0,F
+                      00023         MULT8   3
+0011   19A0               M         BTFSC   A0, 3
+0012   07A2               M         ADDWF   B1,F
+0013   0CA2               M         RRF     B1,F
+0014   0CA1               M         RRF     B0,F
+                      00024         MULT8   4
+0015   1A20               M         BTFSC   A0, 4
+0016   07A2               M         ADDWF   B1,F
+0017   0CA2               M         RRF     B1,F
+0018   0CA1               M         RRF     B0,F
+                      00025         MULT8   5
+0019   1AA0               M         BTFSC   A0, 5
+MPASM 03.20 Released          EXEMPLO.ASM   1-6-2003  16:24:14         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+001A   07A2               M         ADDWF   B1,F
+001B   0CA2               M         RRF     B1,F
+001C   0CA1               M         RRF     B0,F
+                      00026         MULT8   6
+001D   1B20               M         BTFSC   A0, 6
+001E   07A2               M         ADDWF   B1,F
+001F   0CA2               M         RRF     B1,F
+0020   0CA1               M         RRF     B0,F
+                      00027         MULT8   7
+0021   1BA0               M         BTFSC   A0, 7
+0022   07A2               M         ADDWF   B1,F
+0023   0CA2               M         RRF     B1,F
+0024   0CA1               M         RRF     B0,F
+0025   0008           00028         RETURN
+0026                  00029 INICIO:
+0026   305A           00030         MOVLW   D'90'           
+0027   00A0           00031         MOVWF   A0                      ; A0=90 decimal
+0028   3005           00032         MOVLW   D'5'
+0029   00A1           00033         MOVWF   B0                      ; B0=5 decimal
+002A   2001           00034         CALL    MULTIPLICA8X8           ; chamada da sub-rotina de multiplicação
+002B   0063           00035         SLEEP                           ; fim do programa
+Warning[205]: Found directive in column 1. (END)
+                      00036 END
+MPASM 03.20 Released          EXEMPLO.ASM   1-6-2003  16:24:14         PAGE  3
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+A0                                00000020
+ADEN                              00000003
+B0                                00000021
+B1                                00000022
+BRGH                              00000002
+C                                 00000000
+C1INV                             00000004
+C1OUT                             00000006
+C2INV                             00000005
+C2OUT                             00000007
+CCP1CON                           00000017
+CCP1IE                            00000002
+CCP1IF                            00000002
+CCP1M0                            00000000
+CCP1M1                            00000001
+CCP1M2                            00000002
+CCP1M3                            00000003
+CCP1X                             00000005
+CCP1Y                             00000004
+CCPR1H                            00000016
+CCPR1L                            00000015
+CIS                               00000003
+CM0                               00000000
+CM1                               00000001
+CM2                               00000002
+CMCON                             0000001F
+CMIE                              00000006
+CMIF                              00000006
+CREN                              00000004
+CSRC                              00000007
+DC                                00000001
+EEADR                             0000009B
+EECON1                            0000009C
+EECON2                            0000009D
+EEDATA                            0000009A
+EEIE                              00000007
+EEIF                              00000007
+F                                 00000001
+FERR                              00000002
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+INICIO                            00000026
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+MULT8                             
+MULTIPLICA8X8                     00000001
+NOT_BO                            00000000
+NOT_BOD                           00000000
+NOT_BOR                           00000000
+MPASM 03.20 Released          EXEMPLO.ASM   1-6-2003  16:24:14         PAGE  4
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+NOT_PD                            00000003
+NOT_POR                           00000001
+NOT_RBPU                          00000007
+NOT_T1SYNC                        00000002
+NOT_TO                            00000004
+OERR                              00000001
+OPTION_REG                        00000081
+OSCF                              00000003
+PCL                               00000002
+PCLATH                            0000000A
+PCON                              0000008E
+PEIE                              00000006
+PIE1                              0000008C
+PIR1                              0000000C
+PORTA                             00000005
+PORTB                             00000006
+PR2                               00000092
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+RBIE                              00000003
+RBIF                              00000000
+RCIE                              00000005
+RCIF                              00000005
+RCREG                             0000001A
+RCSTA                             00000018
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+RX9                               00000006
+RX9D                              00000000
+SPBRG                             00000099
+SPEN                              00000007
+SREN                              00000005
+STATUS                            00000003
+SYNC                              00000004
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+T1CKPS0                           00000004
+T1CKPS1                           00000005
+T1CON                             00000010
+T1OSCEN                           00000003
+T2CKPS0                           00000000
+T2CKPS1                           00000001
+T2CON                             00000012
+TMR0                              00000001
+TMR1CS                            00000001
+TMR1H                             0000000F
+TMR1IE                            00000000
+TMR1IF                            00000000
+MPASM 03.20 Released          EXEMPLO.ASM   1-6-2003  16:24:14         PAGE  5
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+TMR1L                             0000000E
+TMR1ON                            00000000
+TMR2                              00000011
+TMR2IE                            00000001
+TMR2IF                            00000001
+TMR2ON                            00000002
+TOUTPS0                           00000003
+TOUTPS1                           00000004
+TOUTPS2                           00000005
+TOUTPS3                           00000006
+TRISA                             00000085
+TRISB                             00000086
+TRMT                              00000001
+TX9                               00000006
+TX9D                              00000000
+TXEN                              00000005
+TXIE                              00000004
+TXIF                              00000004
+TXREG                             00000019
+TXSTA                             00000098
+VR0                               00000000
+VR1                               00000001
+VR2                               00000002
+VR3                               00000003
+VRCON                             0000009F
+VREN                              00000007
+VROE                              00000006
+VRR                               00000005
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_BODEN_OFF                        00003FBF
+_BODEN_ON                         00003FFF
+_CP_50                            00002BFF
+_CP_75                            000017FF
+_CP_ALL                           000003FF
+_CP_OFF                           00003FFF
+_DATA_CP_OFF                      00003FFF
+_DATA_CP_ON                       00003EFF
+_ER_OSC_CLKOUT                    00003FFF
+_ER_OSC_NOCLKOUT                  00003FFE
+_EXTCLK_OSC                       00003FEF
+_HS_OSC                           00003FEE
+_INTRC_OSC_CLKOUT                 00003FFD
+_INTRC_OSC_NOCLKOUT               00003FFC
+_LP_OSC                           00003FEC
+_LVP_OFF                          00003F7F
+_LVP_ON                           00003FFF
+_MCLRE_OFF                        00003FDF
+_MCLRE_ON                         00003FFF
+_PWRTE_OFF                        00003FFF
+MPASM 03.20 Released          EXEMPLO.ASM   1-6-2003  16:24:14         PAGE  6
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_PWRTE_ON                         00003FF7
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FED
+__16F627                          00000001
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXX---- ----------------
+2000 : -------X-------- ---------------- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Words Used:    44
+Program Memory Words Free:   980
+
+
+Errors   :     0
+Warnings :     5 reported,     0 suppressed
+Messages :     0 reported,     0 suppressed
+
+
